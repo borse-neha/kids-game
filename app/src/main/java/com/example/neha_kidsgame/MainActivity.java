@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
+        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
         webSettings.setSupportZoom(false);
         webSettings.setBuiltInZoomControls(false);
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebViewClient(new WebViewClient());
 
         // Load the local HTML file (but keep webview hidden for now)
-        webView.loadUrl("file:///android_asset/index.html");
+        webView.loadUrl("file:///android_asset/fun.html");
 
         // Set up and start the intro video
         String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.game_intro;

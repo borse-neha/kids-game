@@ -1,5 +1,6 @@
-- [x] Implement Mandatory Intro Video
-    - [x] Update activity_main.xml with VideoView overlay
-    - [x] Implement video playback and auto-transition in MainActivity.java
-    - [x] Remove all skip interaction logic
-- [x] Verify build and sequence
+- [/] Kids' Typography & Box Refinement
+    - [x] Research SVG text centering for larger fonts
+    - [ ] Update fun.html: Enlarge titles and matching letters
+    - [ ] Update fun.html: Shrink and narrow animal boxes
+    - [ ] Update fun.html: Tighten vertical layout
+- [ ] Build and Verify APK

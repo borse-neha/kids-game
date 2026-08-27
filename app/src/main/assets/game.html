@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>FunLearning v3.0</title>
+<style>
+  :root {
+    --bg-grad: linear-gradient(180deg, #e0f2fe 0%, #fdf2f8 50%, #fef3c7 100%);
+    --card-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    --border-rad: 30px;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+    --theme-color: #6366f1;
+    /* CHUNKY BLOCK FONT */
+    --font-stack: "Arial Black", "Arial-BoldMT", Arial, sans-serif;
+  }
+
+  /* HARDCORE RESET & FONT FORCE */
+  * {
+    box-sizing: border-box;
+    margin: 0; padding: 0;
+    user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+    font-family: var(--font-stack) !important;
+    font-style: normal !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px;
+  }
+
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #fff; }
+  body {
+    background: var(--bg-grad);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: max(20px, var(--safe-top));
+    padding-bottom: max(20px, var(--safe-bottom));
+  }
+
+  .screen { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 15px; }
+  .screen.active { display: flex; }
+
+  header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; height: 55px; flex-shrink: 0; }
+  .ctrl-btn {
+    width: 52px; height: 52px; border-radius: 50%; border: none; background: #6366f1; color: white; font-size: 24px;
+    cursor: pointer; box-shadow: 0 6px 12px rgba(99, 102, 241, 0.35); display: flex; align-items: center; justify-content: center;
+  }
+  .exit-btn { background: #f44336; } .settings-btn { background: #64748b; } .ctrl-btn:active { transform: scale(0.9); }
+
+  .score-badge {
+    background: #ffffff; padding: 10px 22px; border-radius: 25px; font-size: 18px; color: #eab308;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px;
+  }
+  .hub-title { font-size: 32px; color: #4338ca; text-align: center; margin: 15px 0; letter-spacing: 2.5px; }
+
+  .menu-grid {
+    width: 100%; max-width: 440px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; align-content: center; padding: 15px 0;
+  }
+  .menu-card {
+    background: #ffffff; border-radius: 35px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 12px; padding: 35px 10px; box-shadow: var(--card-shadow); border: 4.5px solid transparent;
+    cursor: pointer; transition: transform 0.15s ease;
+  }
+  .menu-card:active { transform: scale(0.94); }
+  .menu-card .icon { font-size: 55px; line-height: 1; }
+  .menu-card .label { font-size: 18px; color: #334155; text-align: center; }
+
+  .diff-container { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 22px; flex: 1; justify-content: center; }
+  .diff-btn {
+    padding: 24px; border-radius: 30px; border: none; font-size: 24px; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 24px 40px; transition: transform 0.15s;
+  }
+  .btn-easy { background: #10b981; } .btn-med { background: #f59e0b; } .btn-hard { background: #ef4444; }
+
+  .game-title { font-size: 20px; color: #0284c7; margin: 10px 0; text-align: center; letter-spacing: 3px; }
+  .game-container { position: relative; width: 100%; max-width: 650px; flex: 1; display: flex; justify-content: space-between; align-items: center; gap: 40px; padding: 10px; }
+  #connector-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+
+  .column { display: flex; flex-direction: column; justify-content: space-between; height: 100%; gap: 14px; z-index: 10; }
+  .left-col { width: 60%; max-width: 320px; } /* GIANT CHUNKY BOXES */
+  .right-col { width: 35%; flex: 1; }
+
+  .card {
+    background: #ffffff; border-radius: var(--border-rad); display: flex; align-items: center;
+    box-shadow: var(--card-shadow); border: 4px solid transparent; cursor: pointer; position: relative;
+    transition: transform 0.15s ease; width: 100%;
+  }
+  .left-col .card { justify-content: flex-start; padding: 0 50px 0 20px; border-color: var(--theme-color); }
+  .right-col .card { padding: 8px 10px; border-color: #f1f5f9; }
+  .card.selected { transform: scale(1.08); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .card.completed { cursor: default; opacity: 0.75; transform: none !important; }
+
+  .letter-display {
+    font-size: 38px; color: var(--theme-color); line-height: 1; width: 100%; text-align: center;
+    white-space: nowrap; overflow: hidden;
+  }
+  .long-text { font-size: 24px; }
+  .extra-long-text { font-size: 18px; }
+
+  .card-icon { font-size: 38px; margin-right: 12px; flex-shrink: 0; }
+  .card-label { font-size: 0px; opacity: 0; visibility: hidden; } /* HIDE LABELS FOR MINIMALISM */
+
+  .dot { width: 26px; height: 26px; border-radius: 50%; background: #ffffff; border: 6px solid #cbd5e1; position: absolute; top: 50%; transform: translateY(-50%); }
+  .left-col .dot { right: -13px; border-color: var(--theme-color); } .right-col .dot { left: -13px; } .completed .dot { background: var(--theme-color); }
+
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-content { background: white; padding: 50px 35px; border-radius: 45px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 30px 70px rgba(0,0,0,0.35); }
+  .modal h2 { font-size: 36px; color: #4338ca; margin-bottom: 30px; letter-spacing: 3px; }
+  .modal-btn { margin-top: 15px; padding: 22px; font-size: 22px; border-radius: 60px; border: none; background: #10b981; color: white; cursor: pointer; width: 100%; }
+
+  .setting-item { display: flex; justify-content: space-between; align-items: center; font-size: 24px; color: #4b5563; margin-bottom: 30px; }
+  .toggle-switch { position: relative; display: inline-block; width: 70px; height: 40px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 40px; }
+  .slider:before { position: absolute; content: ""; height: 32px; width: 32px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+  input:checked + .slider { background-color: #6366f1; }
+  input:checked + .slider:before { transform: translateX(30px); }
+
+  .score-item { display: flex; justify-content: space-between; padding: 18px 25px; background: #f1f5f9; border-radius: 25px; font-size: 24px; margin-bottom: 15px; }
+</style>
+</head>
+<body onclick="handleGlobalClick()" style="font-family: Arial Black, sans-serif !important;">
+
+<!-- 1. HOME SCREEN -->
+<div class="screen active" id="screenHome">
+  <header>
+    <button class="ctrl-btn exit-btn" onclick="exitGame()">✕</button>
+    <div class="score-badge">⭐ SCORE: <span id="homeScore">0</span></div>
+    <button class="ctrl-btn settings-btn" onclick="openSettings()">⚙️</button>
+  </header>
+  <h1 class="hub-title" style="font-family: Arial Black, sans-serif !important;">🎮 FUN LEARNING</h1>
+  <div class="menu-grid">
+    <div class="menu-card" style="border-color: #ef4444;" onclick="chooseCategory('alphabets')"><span class="icon">🅰️</span><span class="label">ALPHABETS</span></div>
+    <div class="menu-card" style="border-color: #3b82f6;" onclick="chooseCategory('shapes')"><span class="icon">🔺</span><span class="label">SHAPES</span></div>
+    <div class="menu-card" style="border-color: #10b981;" onclick="chooseCategory('colors')"><span class="icon">🎨</span><span class="label">COLORS</span></div>
+    <div class="menu-card" style="border-color: #f59e0b;" onclick="chooseCategory('animals')"><span class="icon">🦁</span><span class="label">ANIMALS</span></div>
+  </div>
+  <button class="score-badge" style="margin-bottom: 15px; cursor:pointer;" onclick="openScoreboard()">🏆 HIGH SCORES</button>
+</div>
+
+<!-- 2. DIFFICULTY SELECTOR -->
+<div class="screen" id="screenDiff">
+  <header>
+    <button class="ctrl-btn" onclick="showScreen('screenHome')">🏠</button>
+    <h2 id="diffHeaderTitle" style="color: #6366f1; font-size: 24px; font-family: Arial Black, sans-serif !important;">LEVEL</h2>
+    <div class="score-badge">⭐ <span id="diffScore">0</span></div>
+  </header>
+  <div class="diff-container">
+    <button class="diff-btn btn-easy" onclick="startGameWithDiff(3)"><span>🌱 EASY</span><span>3 PAIRS</span></button>
+    <button class="diff-btn btn-med" onclick="startGameWithDiff(4)"><span>⚡ MEDIUM</span><span>4 PAIRS</span></button>
+    <button class="diff-btn btn-hard" onclick="startGameWithDiff(5)"><span>🔥 HARD</span><span>5 PAIRS</span></button>
+  </div>
+  <div></div>
+</div>
+
+<!-- 3. GAMEPLAY -->
+<div class="screen" id="screenGame">
+  <header>
+    <button class="ctrl-btn" onclick="showScreen('screenDiff')">⬅</button>
+    <div class="score-badge">⭐ <span id="gameScore">0</span></div>
+    <button class="ctrl-btn" onclick="renderGameRound()">↺</button>
+  </header>
+  <h1 class="game-title" id="gameHeadline" style="font-family: Arial Black, sans-serif !important;">MATCH THE PAIRS</h1>
+  <div class="game-container" id="gameArea"><canvas id="connector-canvas"></canvas><div class="column left-col" id="leftColumn"></div><div class="column right-col" id="rightColumn"></div></div>
+</div>
+
+<!-- MODALS -->
+<div class="modal" id="modalSettings">
+  <div class="modal-content">
+    <h2 style="font-family: Arial Black, sans-serif !important;">SETTINGS</h2>
+    <div class="settings-list">
+      <div class="setting-item"><span>MUSIC (SONG)</span><label class="toggle-switch"><input type="checkbox" id="musicToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
+      <div class="setting-item"><span>SOUND EFFECTS</span><label class="toggle-switch"><input type="checkbox" id="sfxToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
+    </div>
+    <button class="modal-btn" onclick="closeModal('modalSettings')">CLOSE</button>
+    <button class="modal-btn" style="background:#f44336; margin-top:15px;" onclick="exitGame()">EXIT GAME</button>
+  </div>
+</div>
+
+<div class="modal" id="modalScoreboard">
+  <div class="modal-content">
+    <h2 style="font-family: Arial Black, sans-serif !important;">HIGH SCORES 🏆</h2>
+    <div class="score-list" id="scoreboardList"></div>
+    <button class="modal-btn" onclick="closeModal('modalScoreboard')">BACK</button>
+  </div>
+</div>
+
+<div class="modal" id="winModal">
+  <div class="modal-content">
+    <h2 style="color:#10b981; font-family: Arial Black, sans-serif !important;">🌟 AWESOME! 🌟</h2>
+    <p style="font-size: 20px; color: #64748b; margin-bottom:15px;">ROUND COMPLETED! +<span id="roundEarned">0</span> POINTS</p>
+    <p style="font-size: 26px; font-weight: bold; color: #4338ca; margin-bottom:25px;">TOTAL SCORE: <span id="finalScorePop">0</span></p>
+    <button class="modal-btn" onclick="renderGameRound()">NEXT TASK ➔</button>
+    <button class="modal-btn" style="background:#6366f1; margin-top:15px;" onclick="showScreen('screenHome')">MAIN MENU 🏠</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+  let audioCtx = null, musicGain = null, musicIsPlaying = false;
+  const settings = {
+    music: JSON.parse(localStorage.getItem('music') ?? 'true'),
+    sfx: JSON.parse(localStorage.getItem('sfx') ?? 'true'),
+    highScores: JSON.parse(localStorage.getItem('highScores') ?? '[]')
+  };
+
+  function handleGlobalClick() {
+    if (!audioCtx) {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        initAudio();
+      } catch(e) { console.error("Audio initialization failed", e); }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function initAudio() {
+    document.getElementById('musicToggle').checked = settings.music;
+    document.getElementById('sfxToggle').checked = settings.sfx;
+    if (settings.music) startBGM();
+  }
+
+  function updateAudioSettings() {
+    settings.music = document.getElementById('musicToggle').checked;
+    settings.sfx = document.getElementById('sfxToggle').checked;
+    localStorage.setItem('music', settings.music);
+    localStorage.setItem('sfx', settings.sfx);
+    if (settings.music) startBGM(); else stopBGM();
+  }
+
+  function startBGM() {
+    if (musicIsPlaying || !audioCtx) return;
+    musicIsPlaying = true;
+    musicGain = audioCtx.createGain();
+    musicGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    musicGain.connect(audioCtx.destination);
+    const loop = () => {
+      if (!settings.music || !musicIsPlaying) return;
+      const now = audioCtx.currentTime;
+      [261.63, 329.63, 392.00, 523.25].forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(f, now + i * 0.6);
+        osc.connect(musicGain); osc.start(now + i * 0.6); osc.stop(now + i * 0.6 + 0.5);
+      });
+      setTimeout(loop, 2400);
+    };
+    loop();
+  }
+
+  function stopBGM() { musicIsPlaying = false; }
+
+  function playTone(freq, duration, type='sine') {
+    if (!settings.sfx || !audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  function speak(text) {
+    if (!settings.sfx || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text); u.rate = 1.0;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+
+  function openSettings() { document.getElementById('modalSettings').style.display = 'flex'; }
+  function openScoreboard() {
+    const list = document.getElementById('scoreboardList');
+    list.innerHTML = settings.highScores.length
+      ? settings.highScores.map((s, i) => `<div class="score-item"><span>#${i+1}</span> <span>${s} PTS</span></div>`).join('')
+      : '<p>NO SCORES YET!</p>';
+    document.getElementById('modalScoreboard').style.display = 'flex';
+  }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+  function saveScore() {
+    if (totalScore <= 0) return;
+    if (!settings.highScores.includes(totalScore)) {
+      settings.highScores.push(totalScore);
+      settings.highScores.sort((a,b) => b - a);
+      settings.highScores = settings.highScores.slice(0, 5);
+      localStorage.setItem('highScores', JSON.stringify(settings.highScores));
+    }
+  }
+
+  const datasets = {
+    alphabets: [
+      { id: 'A', left: 'A', target: 'APPLE', icon: '🍎', color: '#ef4444' },
+      { id: 'B', left: 'B', target: 'BEE', icon: '🐝', color: '#f59e0b' },
+      { id: 'C', left: 'C', target: 'CAT', icon: '🐱', color: '#10b981' },
+      { id: 'D', left: 'D', target: 'DOG', icon: '🐶', color: '#3b82f6' },
+      { id: 'E', left: 'E', target: 'ELEPHANT', icon: '🐘', color: '#8b5cf6' },
+      { id: 'F', left: 'F', target: 'FISH', icon: '🐟', color: '#ec4899' },
+      { id: 'G', left: 'G', target: 'GRAPES', icon: '🍇', color: '#06b6d4' },
+      { id: 'H', left: 'H', target: 'HORSE', icon: '🐴', color: '#f97316' },
+      { id: 'I', left: 'I', target: 'ICE CREAM', icon: '🍦', color: '#84cc16' },
+      { id: 'J', left: 'J', target: 'JUICE', icon: '🧃', color: '#0ea5e9' },
+      { id: 'K', left: 'K', target: 'KANGAROO', icon: '🦘', color: '#d946ef' },
+      { id: 'L', left: 'L', target: 'LION', icon: '🦁', color: '#14b8a6' },
+      { id: 'M', left: 'M', target: 'MONKEY', icon: '🐒', color: '#e11d48' },
+      { id: 'Z', left: 'Z', target: 'ZEBRA', icon: '🦓', color: '#059669' }
+    ],
+    shapes: [
+      { id: 'circle', left: 'CIRCLE', target: 'CIRCLE', icon: '⚽', color: '#ef4444' },
+      { id: 'square', left: 'SQUARE', target: 'SQUARE', icon: '📦', color: '#3b82f6' },
+      { id: 'triangle', left: 'TRIANGLE', target: 'TRIANGLE', icon: '🍕', color: '#f59e0b' },
+      { id: 'star', left: 'STAR', target: 'STAR', icon: '🌟', color: '#ca8a04' },
+      { id: 'heart', left: 'HEART', target: 'HEART', icon: '💖', color: '#ec4899' },
+      { id: 'diamond', left: 'DIAMOND', target: 'DIAMOND', icon: '🪁', color: '#06b6d4' }
+    ],
+    colors: [
+      { id: 'red', left: 'RED', target: 'RED', icon: '🍎', color: '#ef4444' },
+      { id: 'blue', left: 'BLUE', target: 'BLUE', icon: '🫐', color: '#3b82f6' },
+      { id: 'yellow', left: 'YELLOW', target: 'YELLOW', icon: '🍌', color: '#eab308' },
+      { id: 'green', left: 'GREEN', target: 'GREEN', icon: '🍃', color: '#10b981' },
+      { id: 'orange', left: 'ORANGE', target: 'ORANGE', icon: '🍊', color: '#f97316' },
+      { id: 'purple', left: 'PURPLE', target: 'PURPLE', icon: '🍇', color: '#8b5cf6' }
+    ],
+    animals: [
+      { id: 'cow', left: 'COW', target: 'COW', icon: '🐄', color: '#ef4444' },
+      { id: 'bee', left: 'BEE', target: 'BEE', icon: '🐝', color: '#f59e0b' },
+      { id: 'sheep', left: 'SHEEP', target: 'SHEEP', icon: '🐑', color: '#06b6d4' },
+      { id: 'hen', left: 'HEN', target: 'HEN', icon: '🐔', color: '#8b5cf6' },
+      { id: 'dog', left: 'DOG', target: 'DOG', icon: '🐕', color: '#3b82f6' },
+      { id: 'cat', left: 'CAT', target: 'CAT', icon: '🐈', color: '#ec4899' }
+    ]
+  };
+
+  let selectedCategory = 'alphabets', pairCount = 4, totalScore = 0, matches = [], selectedLeft = null, currentRoundData = [];
+
+  function updateScoreDisplays() {
+    document.getElementById('homeScore').textContent = totalScore;
+    document.getElementById('diffScore').textContent = totalScore;
+    document.getElementById('gameScore').textContent = totalScore;
+  }
+
+  function showScreen(screenId) {
+    if (screenId === 'screenHome') saveScore();
+    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    if (screenId === 'screenGame') setTimeout(resizeCanvas, 100);
+    updateScoreDisplays();
+  }
+
+  function chooseCategory(cat) { selectedCategory = cat; showScreen('screenDiff'); }
+  function startGameWithDiff(count) { pairCount = count; showScreen('screenGame'); renderGameRound(); }
+
+  const canvas = document.getElementById('connector-canvas'), ctx = canvas.getContext('2d');
+  function resizeCanvas() {
+    const parent = canvas.parentElement;
+    if(!parent) return;
+    canvas.width = parent.clientWidth;
+    canvas.height = parent.clientHeight;
+    drawLines();
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function getDotCenter(card) {
+    const dot = card.querySelector('.dot'), rect = dot.getBoundingClientRect(), pRect = canvas.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2 - pRect.left, y: rect.top + rect.height / 2 - pRect.top };
+  }
+
+  function drawLines() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    matches.forEach(m => {
+      const p1 = getDotCenter(m.leftEl), p2 = getDotCenter(m.rightEl);
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.bezierCurveTo(p1.x + 50, p1.y, p2.x - 50, p2.y, p2.x, p2.y);
+      ctx.strokeStyle = m.color; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
+    });
+  }
+
+  function renderGameRound() {
+    document.getElementById('winModal').style.display = 'none';
+    const leftCol = document.getElementById('leftColumn'), rightCol = document.getElementById('rightColumn');
+    leftCol.innerHTML = ''; rightCol.innerHTML = ''; matches = []; selectedLeft = null;
+
+    const sourceData = datasets[selectedCategory] || datasets.alphabets;
+    const realCount = Math.min(pairCount, sourceData.length);
+    currentRoundData = [...sourceData].sort(() => Math.random() - 0.5).slice(0, realCount);
+
+    const cardHeight = `calc((100% - ${(realCount - 1) * 14}px) / ${realCount})`;
+
+    [...currentRoundData].sort(() => Math.random() - 0.5).forEach(item => {
+      const card = document.createElement('div'); card.className = 'card'; card.style.height = cardHeight;
+      card.style.setProperty('--theme-color', item.color);
+
+      let fontClass = "";
+      if(item.left.length > 5) fontClass = "long-text";
+      if(item.left.length > 8) fontClass = "extra-long-text";
+
+      card.innerHTML = `<span class="letter-display ${fontClass}">${item.left}</span><div class="dot"></div>`;
+      card.onclick = () => {
+        if (card.classList.contains('completed')) return;
+        document.querySelectorAll('.left-col .card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected'); selectedLeft = { element: card, data: item };
+        playTone(440, 0.1); speak(item.left);
+      };
+      leftCol.appendChild(card);
+    });
+
+    [...currentRoundData].sort(() => Math.random() - 0.5).forEach(item => {
+      const card = document.createElement('div'); card.className = 'card'; card.style.height = cardHeight;
+      card.dataset.id = item.id;
+      card.innerHTML = `<div class="dot"></div><span class="card-icon">${item.icon}</span>`;
+      card.onclick = () => {
+        if (!selectedLeft || card.classList.contains('completed')) return;
+        if (selectedLeft.data.id === card.dataset.id) {
+          card.style.setProperty('--theme-color', selectedLeft.data.color); card.classList.add('completed'); selectedLeft.element.classList.add('completed');
+          matches.push({ leftEl: selectedLeft.element, rightEl: card, color: selectedLeft.data.color }); drawLines();
+          playTone(659, 0.2); speak(item.target); selectedLeft = null;
+          totalScore += 5; updateScoreDisplays();
+          if (matches.length === currentRoundData.length) {
+            document.getElementById('roundEarned').textContent = currentRoundData.length * 5;
+            document.getElementById('finalScorePop').textContent = totalScore;
+            setTimeout(() => {
+              if (typeof confetti === 'function') confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+              document.getElementById('winModal').style.display = 'flex';
+              playTone(523, 0.5);
+            }, 400);
+          }
+        } else { playTone(220, 0.2, 'sawtooth'); }
+      };
+      rightCol.appendChild(card);
+    });
+    setTimeout(resizeCanvas, 100);
+  }
+
+  function exitGame() { if (window.Android) window.Android.exitGame(); }
+  window.onload = () => { updateScoreDisplays(); };
+</script>
+</body>
+</html>

@@ -1,36 +1,59 @@
-# Implementation Plan - Mandatory Intro Video Startup
+# Implementation Plan - UI Improvements & Content Expansion for FunLearning
 
-Add a full-screen intro video that plays completely at every app launch before revealing the game hub.
+This plan focuses on fixing the text clipping in the name boxes, expanding the game content with multiple levels for Animals, Colors, and Shapes, and ensuring a child-friendly, responsive design for 3-4 year olds.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **No Skip**: As requested, the skip functionality has been removed. The user must watch the full video before entering the game.
+> I will be expanding the content to include all requested levels. The current "Difficulty" screen will be repurposed into a "Level Selector" screen for each category.
+
+> [!WARNING]
+> I will replace the SVG-based text rendering with standard HTML text to better handle long words like "DIAMOND" and "ELEPHANT" without clipping.
 
 ## Proposed Changes
 
-### Layout Update
+### Game UI & Layout (HTML/CSS)
 
-#### [MODIFY] [activity_main.xml](file:///C:/Users/Neha Borse/AndroidStudioProjects/nehakidsGame/app/src/main/res/layout/activity_main.xml)
-- Overlay a `VideoView` on top of the `WebView` using a `FrameLayout`.
-- The `VideoView` will start as visible, and the `WebView` will be hidden or under it.
+#### [MODIFY] [fun.html](file:///C:/Users/Neha Borse/AndroidStudioProjects/nehakidsGame/app/src/main/assets/fun.html)
 
-### Activity Implementation
+**1. Fix Left-Side Name Boxes**
+- Increase `.left-col` width to at least **40%** to prevent text clipping for long words.
+- Replace SVG `<text>` with standard HTML `<span>` or `div` for the name display.
+- Use `display: flex`, `justify-content: center`, and `align-items: center` to keep text perfectly centered.
+- Add horizontal padding to the cards to ensure words like "DIAMOND" don't touch the edges.
+- Implement responsive font scaling (e.g., using `clamp()` or CSS classes for word length) to ensure readability on small screens.
 
-#### [MODIFY] [MainActivity.java](file:///C:/Users/Neha Borse/AndroidStudioProjects/nehakidsGame/app/src/main/java/com/example/neha_kidsgame/MainActivity.java)
-- **Video Logic**:
-    - Load `res/raw/game_intro.mp4`.
-    - Use `setOnCompletionListener` to trigger the switch to the game hub.
-    - Ensure the video is forced into full-screen and maintains its aspect ratio as best as possible.
-- **Transition**:
-    - Once the video ends, the `VideoView` will be removed/hidden with a fade animation.
+**2. Responsive Matching Area**
+- Adjust the `.game-container` to use a flexible gap or percentage-based widths so both columns fit perfectly on all devices.
+- Maintain the thick connection lines and large dots for easy interaction.
+
+**3. Level Selection System**
+- Update `screenDiff` to display a list of levels (⭐ Level 1, ⭐ Level 2, etc.) instead of generic "Easy/Medium/Hard".
+- Each level will be mapped to a specific set of items and a pair count.
+
+### Content & Logic (JavaScript)
+
+#### [MODIFY] [fun.html](file:///C:/Users/Neha Borse/AndroidStudioProjects/nehakidsGame/app/src/main/assets/fun.html)
+
+**1. Expanded Datasets**
+- Complete the datasets for:
+    - **Animals**: 4 levels with increasing difficulty and more animals (Tiger, Giraffe, Zebra, etc.).
+    - **Colors**: 3 levels with bright, distinct colors.
+    - **Shapes**: 3 levels with large, colorful shapes (Rectangle, Star, Hexagon, etc.).
+
+**2. Level-Based Game Initialization**
+- Update `renderGameRound()` to accept a specific `level` and `category`.
+- Select the correct subset of data for the chosen level.
+- Randomize both columns while maintaining the correct internal mapping.
+
+**3. Feedback & Scoring**
+- Maintain the existing score system.
+- Ensure positive visual feedback (animations) remains active.
 
 ## Verification Plan
 
-### Automated Tests
-- Run `./gradlew assembleDebug` to verify the build.
-
 ### Manual Verification
-- **Startup**: Launch the app and verify the video plays.
-- **No Skip**: Tap the screen during playback to ensure nothing happens (video keeps playing).
-- **Auto-Switch**: Verify the game loads immediately and automatically once the video finishes.
+- **Text Visibility**: Check words like "DIAMOND", "TRIANGLE", and "ELEPHANT" on small and large screen emulators.
+- **Level Check**: Play through one level of each category to ensure items are correct and progress works.
+- **Matching Check**: Verify connection lines start and end at the correct dots.
+- **Responsive Check**: Test the UI in both narrow and wide portrait modes.

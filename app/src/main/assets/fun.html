@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>FunLearning v5.4</title>
+<style>
+  :root {
+    --bg-grad: linear-gradient(180deg, #e0f2fe 0%, #fdf2f8 50%, #fef3c7 100%);
+    --card-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    --border-rad: 25px;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+    --theme-color: #6366f1;
+    --font-stack: Verdana, Geneva, sans-serif;
+  }
+
+  /* ULTIMATE SYSTEM FONT FORCE */
+  * {
+    box-sizing: border-box;
+    margin: 0; padding: 0;
+    user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+    font-family: var(--font-stack) !important;
+    font-style: normal !important;
+    font-weight: 1000 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px;
+  }
+
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #fff; }
+  body {
+    background: var(--bg-grad);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: max(20px, var(--safe-top));
+    padding-bottom: max(20px, var(--safe-bottom));
+  }
+
+  .screen { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 15px; }
+  .screen.active { display: flex; }
+
+  header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; height: 55px; flex-shrink: 0; }
+  .ctrl-btn {
+    width: 52px; height: 52px; border-radius: 50%; border: none; background: #6366f1; color: white; font-size: 24px;
+    cursor: pointer; box-shadow: 0 6px 15px rgba(99, 102, 241, 0.35); display: flex; align-items: center; justify-content: center;
+  }
+  .exit-btn { background: #f44336; } .settings-btn { background: #64748b; } .ctrl-btn:active { transform: scale(0.9); }
+
+  .score-badge {
+    background: #ffffff; padding: 10px 22px; border-radius: 25px; font-size: 18px; color: #eab308;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px;
+  }
+  .hub-title { font-size: 32px; color: #4338ca; text-align: center; margin: 12px 0; letter-spacing: 2px; }
+
+  .menu-grid { width: 100%; max-width: 440px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; align-content: center; padding: 15px 0; }
+  .menu-card {
+    background: #ffffff; border-radius: 35px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 12px; padding: 35px 10px; box-shadow: var(--card-shadow); border: 4.5px solid transparent;
+    cursor: pointer; transition: transform 0.15s ease;
+  }
+  .menu-card:active { transform: scale(0.94); } .menu-card .icon { font-size: 55px; line-height: 1; } .menu-card .label { font-size: 18px; color: #334155; }
+
+  .diff-container { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 22px; flex: 1; justify-content: center; }
+  .diff-btn { padding: 24px; border-radius: 30px; border: none; font-size: 24px; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 24px 40px; transition: transform 0.15s; }
+  .btn-easy { background: #10b981; } .btn-med { background: #f59e0b; } .btn-hard { background: #ef4444; }
+
+  /* ENLARGED TITLE FOR KIDS */
+  .game-title { font-size: 26px; color: #0284c7; margin: 10px 0; text-align: center; letter-spacing: 3px; font-weight: 1000; }
+
+  .game-container {
+    position: relative; width: 100%; max-width: 650px; flex: 1; display: flex; justify-content: space-between; align-items: center; gap: 0; padding: 10px 5px;
+  }
+  #connector-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+
+  /* COLUMN AND BOX REDISTRIBUTION - SHORTER/NARROWER BOXES */
+  .column { display: flex; flex-direction: column; justify-content: space-between; height: 100%; gap: 6px; z-index: 10; }
+  .left-col { width: 22%; max-width: 100px; }
+  .right-col { width: 32%; max-width: 170px; }
+
+  .card {
+    background: #ffffff; border-radius: var(--border-rad); display: flex; align-items: center;
+    box-shadow: var(--card-shadow); border: 4px solid transparent; cursor: pointer; position: relative;
+    transition: transform 0.15s ease; width: 100%;
+  }
+  .left-col .card { justify-content: center; border-color: var(--theme-color); padding: 0 5px; }
+  .right-col .card { justify-content: center; border-color: #f1f5f9; padding: 5px; }
+  .card.selected { transform: scale(1.08); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .card.completed { cursor: default; opacity: 0.75; transform: none !important; }
+
+  /* ENLARGED SVG TEXT HEIGHT */
+  .svg-text { width: 95%; height: 90%; }
+  .card-icon { font-size: 50px; line-height: 1; }
+
+  .dot { width: 28px; height: 28px; border-radius: 50%; background: #ffffff; border: 6px solid #cbd5e1; position: absolute; top: 50%; transform: translateY(-50%); }
+  .left-col .dot { right: -14px; border-color: var(--theme-color); } .right-col .dot { left: -14px; } .completed .dot { background: var(--theme-color); }
+
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-content { background: white; padding: 50px 35px; border-radius: 45px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 30px 70px rgba(0,0,0,0.35); }
+  .modal h2 { font-size: 36px; color: #4338ca; margin-bottom: 30px; letter-spacing: 2px; }
+  .modal-btn { margin-top: 15px; padding: 22px; font-size: 22px; border-radius: 60px; border: none; background: #10b981; color: white; cursor: pointer; width: 100%; }
+
+  .setting-item { display: flex; justify-content: space-between; align-items: center; font-size: 24px; color: #4b5563; margin-bottom: 30px; }
+  .toggle-switch { position: relative; display: inline-block; width: 70px; height: 40px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 40px; }
+  .slider:before { position: absolute; content: ""; height: 28px; width: 28px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+  input:checked + .slider { background-color: #6366f1; }
+  input:checked + .slider:before { transform: translateX(30px); }
+
+  .score-item { display: flex; justify-content: space-between; padding: 18px 25px; background: #f1f5f9; border-radius: 25px; font-size: 24px; margin-bottom: 15px; }
+</style>
+</head>
+<body onclick="handleGlobalClick()">
+
+<div class="screen active" id="screenHome">
+  <header>
+    <button class="ctrl-btn exit-btn" onclick="exitGame()">✕</button>
+    <div class="score-badge">⭐ SCORE: <span id="homeScore">0</span></div>
+    <button class="ctrl-btn settings-btn" onclick="openSettings()">⚙️</button>
+  </header>
+  <h1 class="hub-title">🎮 FUN LEARNING</h1>
+  <div class="menu-grid">
+    <div class="menu-card" style="border-color: #ef4444;" onclick="chooseCategory('alphabets')"><span class="icon">🅰️</span><span class="label">ALPHABETS</span></div>
+    <div class="menu-card" style="border-color: #3b82f6;" onclick="chooseCategory('shapes')"><span class="icon">🔺</span><span class="label">SHAPES</span></div>
+    <div class="menu-card" style="border-color: #10b981;" onclick="chooseCategory('colors')"><span class="icon">🎨</span><span class="label">COLORS</span></div>
+    <div class="menu-card" style="border-color: #f59e0b;" onclick="chooseCategory('animals')"><span class="icon">🦁</span><span class="label">ANIMALS</span></div>
+  </div>
+  <button class="score-badge" style="margin-bottom: 15px; cursor:pointer;" onclick="openScoreboard()">🏆 HIGH SCORES</button>
+</div>
+
+<div class="screen" id="screenDiff">
+  <header><button class="ctrl-btn" onclick="showScreen('screenHome')">🏠</button><h2 id="diffHeaderTitle" style="color: #6366f1;">LEVEL</h2><div class="score-badge">⭐ <span id="diffScore">0</span></div></header>
+  <div class="diff-container">
+    <button class="diff-btn btn-easy" onclick="startGameWithDiff(3)"><span>🌱 EASY</span><span>3 PAIRS</span></button>
+    <button class="diff-btn btn-med" onclick="startGameWithDiff(4)"><span>⚡ MEDIUM</span><span>4 PAIRS</span></button>
+    <button class="diff-btn btn-hard" onclick="startGameWithDiff(5)"><span>🔥 HARD</span><span>5 PAIRS</span></button>
+  </div>
+  <div></div>
+</div>
+
+<div class="screen" id="screenGame">
+  <header><button class="ctrl-btn" onclick="showScreen('screenDiff')">⬅</button><div class="score-badge">⭐ <span id="gameScore">0</span></div><button class="ctrl-btn" onclick="renderGameRound()">↺</button></header>
+  <h1 class="game-title" id="gameHeadline">MATCH THE PAIRS</h1>
+  <div class="game-container" id="gameArea"><canvas id="connector-canvas"></canvas><div class="column left-col" id="leftColumn"></div><div class="column right-col" id="rightColumn"></div></div>
+</div>
+
+<div class="modal" id="modalSettings">
+  <div class="modal-content"><h2>SETTINGS</h2><div class="settings-list">
+    <div class="setting-item"><span>MUSIC</span><label class="toggle-switch"><input type="checkbox" id="musicToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>SOUNDS</span><label class="toggle-switch"><input type="checkbox" id="sfxToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
+  </div><button class="modal-btn" onclick="closeModal('modalSettings')">CLOSE</button><button class="modal-btn" style="background:#f44336; margin-top:10px;" onclick="exitGame()">EXIT GAME</button></div>
+</div>
+
+<div class="modal" id="modalScoreboard"><div class="modal-content"><h2>HIGH SCORES 🏆</h2><div class="score-list" id="scoreboardList"></div><button class="modal-btn" onclick="closeModal('modalScoreboard')">BACK</button></div></div>
+
+<div class="modal" id="winModal"><div class="modal-content"><h2>🌟 AWESOME! 🌟</h2><p style="font-size: 20px; color: #64748b; margin-bottom:15px;">ROUND COMPLETED! +<span id="roundEarned">0</span> POINTS</p><p style="font-size: 28px; color: #4338ca; margin-bottom:25px;">TOTAL SCORE: <span id="finalScorePop">0</span></p><button class="modal-btn" onclick="renderGameRound()">NEXT TASK ➔</button><button class="modal-btn" style="background:#6366f1; margin-top:15px;" onclick="showScreen('screenHome')">MAIN MENU 🏠</button></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+  let audioCtx = null, musicGain = null, musicIsPlaying = false;
+  const settings = {
+    music: JSON.parse(localStorage.getItem('music') ?? 'true'),
+    sfx: JSON.parse(localStorage.getItem('sfx') ?? 'true'),
+    highScores: JSON.parse(localStorage.getItem('highScores') ?? '[]')
+  };
+
+  function handleGlobalClick() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); initAudio(); } catch(e) {} }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function initAudio() {
+    document.getElementById('musicToggle').checked = settings.music;
+    document.getElementById('sfxToggle').checked = settings.sfx;
+    if (settings.music) startBGM();
+  }
+
+  function updateAudioSettings() {
+    settings.music = document.getElementById('musicToggle').checked;
+    settings.sfx = document.getElementById('sfxToggle').checked;
+    localStorage.setItem('music', settings.music);
+    localStorage.setItem('sfx', settings.sfx);
+    if (settings.music) startBGM(); else stopBGM();
+  }
+
+  function startBGM() {
+    if (musicIsPlaying || !audioCtx) return;
+    musicIsPlaying = true;
+    musicGain = audioCtx.createGain();
+    musicGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    musicGain.connect(audioCtx.destination);
+    const loop = () => {
+      if (!settings.music || !musicIsPlaying) return;
+      const now = audioCtx.currentTime;
+      [261.63, 329.63, 392.00, 523.25].forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(f, now + i * 0.6);
+        osc.connect(musicGain); osc.start(now + i * 0.6); osc.stop(now + i * 0.6 + 0.5);
+      });
+      setTimeout(loop, 2400);
+    };
+    loop();
+  }
+
+  function stopBGM() { musicIsPlaying = false; }
+
+  function playTone(freq, duration, type='sine') {
+    if (!settings.sfx || !audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  function speak(text) {
+    if (!settings.sfx || !('speechSynthesis' in window)) return;
+    try { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 1.0; window.speechSynthesis.speak(u); } catch(e) {}
+  }
+
+  function openSettings() { document.getElementById('modalSettings').style.display = 'flex'; }
+  function openScoreboard() {
+    const list = document.getElementById('scoreboardList');
+    list.innerHTML = settings.highScores.length ? settings.highScores.map((s, i) => `<div class="score-item"><span>#${i+1}</span> <span>${s} PTS</span></div>`).join('') : '<p>NO SCORES YET!</p>';
+    document.getElementById('modalScoreboard').style.display = 'flex';
+  }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  function saveScore() {
+    if (totalScore <= 0) return;
+    if (!settings.highScores.includes(totalScore)) {
+      settings.highScores.push(totalScore); settings.highScores.sort((a,b) => b - a);
+      settings.highScores = settings.highScores.slice(0, 5); localStorage.setItem('highScores', JSON.stringify(settings.highScores));
+    }
+  }
+
+  const datasets = {
+    alphabets: [{id:'A',l:'A',t:'APPLE',i:'🍎',c:'#ef4444'},{id:'B',l:'B',t:'BEE',i:'🐝',c:'#f59e0b'},{id:'C',l:'C',t:'CAT',i:'🐱',c:'#10b981'},{id:'D',l:'D',t:'DOG',i:'🐶',c:'#3b82f6'},{id:'E',l:'E',t:'ELEPHANT',i:'🐘',c:'#8b5cf6'},{id:'F',l:'F',t:'FISH',i:'🐟',c:'#ec4899'},{id:'G',l:'G',t:'GRAPES',i:'🍇',c:'#06b6d4'},{id:'H',l:'H',t:'HORSE',i:'🐴',c:'#f97316'},{id:'I',l:'I',t:'ICE CREAM',i:'🍦',c:'#84cc16'},{id:'J',l:'J',t:'JUICE',i:'🧃',c:'#0ea5e9'},{id:'K',l:'K',t:'KANGAROO',i:'🦘',c:'#d946ef'},{id:'L',l:'L',t:'LION',i:'🦁',c:'#14b8a6'},{id:'M',l:'M',t:'MONKEY',i:'🐒',c:'#e11d48'},{id:'Z',l:'Z',t:'ZEBRA',i:'🦓',c:'#059669'}],
+    shapes: [{id:'circle',l:'CIRCLE',t:'CIRCLE',i:'⚽',c:'#ef4444'},{id:'square',l:'SQUARE',t:'SQUARE',i:'📦',c:'#3b82f6'},{id:'triangle',l:'TRIANGLE',t:'TRIANGLE',i:'🍕',c:'#f59e0b'},{id:'star',l:'STAR',t:'STAR',i:'🌟',c:'#ca8a04'},{id:'heart',l:'HEART',t:'HEART',i:'💖',c:'#ec4899'},{id:'diamond',l:'DIAMOND',t:'DIAMOND',i:'🪁',c:'#06b6d4'}],
+    colors: [{id:'red',l:'RED',t:'RED',i:'🍎',c:'#ef4444'},{id:'blue',l:'BLUE',t:'BLUE',i:'🫐',c:'#3b82f6'},{id:'yellow',l:'YELLOW',t:'YELLOW',i:'🍌',c:'#eab308'},{id:'green',l:'GREEN',t:'GREEN',i:'🍃',c:'#10b981'},{id:'orange',l:'ORANGE',t:'ORANGE',i:'🍊',c:'#f97316'},{id:'purple',l:'PURPLE',t:'PURPLE',i:'🍇',c:'#8b5cf6'}],
+    animals: [{id:'cow',l:'COW',t:'COW',i:'🐄',c:'#ef4444'},{id:'bee',l:'BEE',t:'BEE',i:'🐝',c:'#f59e0b'},{id:'sheep',l:'SHEEP',t:'SHEEP',i:'🐑',c:'#06b6d4'},{id:'hen',l:'HEN',t:'HEN',i:'🐔',c:'#8b5cf6'},{id:'dog',l:'DOG',t:'DOG',i:'🐕',c:'#3b82f6'},{id:'cat',l:'CAT',t:'CAT',i:'🐈',c:'#ec4899'}]
+  };
+
+  let selectedCategory = 'alphabets', pairCount = 4, totalScore = 0, matches = [], selectedLeft = null, currentRoundData = [];
+
+  function updateScoreDisplays() { document.getElementById('homeScore').textContent = totalScore; document.getElementById('diffScore').textContent = totalScore; document.getElementById('gameScore').textContent = totalScore; }
+  function showScreen(screenId) {
+    if (screenId === 'screenHome') saveScore();
+    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    if (screenId === 'screenGame') setTimeout(resizeCanvas, 100);
+    updateScoreDisplays();
+  }
+  function chooseCategory(cat) { selectedCategory = cat; showScreen('screenDiff'); }
+  function startGameWithDiff(count) { pairCount = count; showScreen('screenGame'); renderGameRound(); }
+
+  const canvas = document.getElementById('connector-canvas'), ctx = canvas.getContext('2d');
+  function resizeCanvas() { const p = canvas.parentElement; if(!p) return; canvas.width = p.clientWidth; canvas.height = p.clientHeight; drawLines(); }
+  window.addEventListener('resize', resizeCanvas);
+  function getDotCenter(card) { const dot = card.querySelector('.dot'), r = dot.getBoundingClientRect(), pr = canvas.getBoundingClientRect(); return { x: r.left + r.width / 2 - pr.left, y: r.top + r.height / 2 - pr.top }; }
+
+  function drawLines() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    matches.forEach(m => {
+      const p1 = getDotCenter(m.leftEl), p2 = getDotCenter(m.rightEl);
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y);
+      // OPTIMIZED SWEEPING CURVE FOR WIDE GAP
+      ctx.bezierCurveTo(p1.x+100,p1.y,p2.x-100,p2.y,p2.x,p2.y);
+      ctx.strokeStyle = m.color; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.stroke();
+    });
+  }
+
+  function renderGameRound() {
+    document.getElementById('winModal').style.display = 'none';
+    const leftCol = document.getElementById('leftColumn'), rightCol = document.getElementById('rightColumn');
+    leftCol.innerHTML = ''; rightCol.innerHTML = ''; matches = []; selectedLeft = null;
+    const sourceData = datasets[selectedCategory] || datasets.alphabets;
+    const realCount = Math.min(pairCount, sourceData.length);
+    currentRoundData = [...sourceData].sort(() => Math.random() - 0.5).slice(0, realCount);
+
+    // INCREASED SPACE BY DIVIDING BY realCount + 1
+    const cardHeight = `calc((100% - ${(realCount - 1) * 6}px) / ${realCount + 1})`;
+
+    [...currentRoundData].sort(() => Math.random() - 0.5).forEach(item => {
+      const card = document.createElement('div'); card.className = 'card'; card.style.height = cardHeight; card.style.setProperty('--theme-color', item.c);
+
+      let fontSize = 110;
+      if (item.l.length > 3) fontSize = 80;
+      if (item.l.length > 5) fontSize = 60;
+
+      card.innerHTML = `<svg class="svg-text" viewBox="0 0 200 120"><text x="50%" y="85" text-anchor="middle" fill="${item.c}" font-family="Verdana" font-weight="1000" font-size="${fontSize}">${item.l}</text></svg><div class="dot"></div>`;
+      card.onclick = () => {
+        if (card.classList.contains('completed')) return;
+        document.querySelectorAll('.left-col .card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected'); selectedLeft = { element: card, data: item };
+        playTone(440, 0.1); speak(item.l);
+      };
+      leftCol.appendChild(card);
+    });
+
+    [...currentRoundData].sort(() => Math.random() - 0.5).forEach(item => {
+      const card = document.createElement('div'); card.className = 'card'; card.style.height = cardHeight; card.dataset.id = item.id;
+      card.innerHTML = `<div class="dot"></div><span class="card-icon">${item.i}</span>`;
+      card.onclick = () => {
+        if (!selectedLeft || card.classList.contains('completed')) return;
+        if (selectedLeft.data.id === card.dataset.id) {
+          card.style.setProperty('--theme-color', selectedLeft.data.c); card.classList.add('completed'); selectedLeft.element.classList.add('completed');
+          matches.push({ leftEl: selectedLeft.element, rightEl: card, color: selectedLeft.data.c }); drawLines();
+          playTone(659, 0.2); speak(item.t); selectedLeft = null;
+          totalScore += 5; updateScoreDisplays();
+          if (matches.length === currentRoundData.length) {
+            document.getElementById('roundEarned').textContent = currentRoundData.length * 5; document.getElementById('finalScorePop').textContent = totalScore;
+            setTimeout(() => { if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } }); document.getElementById('winModal').style.display = 'flex'; playTone(523, 0.5); }, 400);
+          }
+        } else { playTone(220, 0.2, 'sawtooth'); }
+      };
+      rightCol.appendChild(card);
+    });
+    setTimeout(resizeCanvas, 100);
+  }
+
+  function exitGame() { if (window.Android) window.Android.exitGame(); }
+  window.onload = () => { updateScoreDisplays(); };
+</script>
+</body>
+</html>
