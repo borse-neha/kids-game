@@ -1,0 +1,5 @@
+- [x] Identify UI and navigation issues
+- [ ] Fix Main Menu button navigation logic
+- [ ] Increase card sizes and column spacing in index.html
+- [ ] Adjust font sizes for better legibility
+- [ ] Verify build and UI on device
