@@ -1,13 +1,16 @@
 package com.example.neha_kidsgame;
 
 import android.annotation.SuppressLint;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
@@ -19,6 +22,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
+    private VideoView introVideo;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -35,21 +39,16 @@ public class MainActivity extends AppCompatActivity {
         hideSystemBars();
 
         webView = findViewById(R.id.webview);
+        introVideo = findViewById(R.id.introVideo);
         
         // Configure WebView settings for Performance and UX
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
-        
-        // Performance: Use cache if available for offline speed
         webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        
-        // UX: Disable zoom controls for a fixed game UI
         webSettings.setSupportZoom(false);
         webSettings.setBuiltInZoomControls(false);
         webSettings.setDisplayZoomControls(false);
-        
-        // Media: Autoplay without user gesture
         webSettings.setMediaPlaybackRequiresUserGesture(false);
         
         // Prevent accidental text selection (long press)
@@ -62,14 +61,29 @@ public class MainActivity extends AppCompatActivity {
         // Ensure links open inside the WebView
         webView.setWebViewClient(new WebViewClient());
 
-        // Load the local HTML file
+        // Load the local HTML file (but keep webview hidden for now)
         webView.loadUrl("file:///android_asset/index.html");
+
+        // Set up and start the intro video
+        String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.game_intro;
+        introVideo.setVideoURI(Uri.parse(videoPath));
+        
+        introVideo.setOnCompletionListener(mp -> {
+            // Once the video finishes, hide it and show the webview
+            introVideo.setVisibility(View.GONE);
+            webView.setVisibility(View.VISIBLE);
+        });
+
+        // Remove skip option by NOT setting an OnClickListener on the VideoView
+        // This ensures the video plays until completion.
+        
+        introVideo.start();
 
         // Handle Back Press
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (webView.canGoBack()) {
+                if (webView.getVisibility() == View.VISIBLE && webView.canGoBack()) {
                     webView.goBack();
                 } else {
                     setEnabled(false);

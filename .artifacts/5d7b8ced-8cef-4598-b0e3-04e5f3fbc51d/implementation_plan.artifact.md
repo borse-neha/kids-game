@@ -1,33 +1,36 @@
-# Implementation Plan - Update App Icon
+# Implementation Plan - Mandatory Intro Video Startup
 
-Set the provided "Neha Kids Game" artwork as the official application launcher icon.
+Add a full-screen intro video that plays completely at every app launch before revealing the game hub.
 
 ## User Review Required
 
-> [!NOTE]
-> To ensure the icon looks sharp on all phone screens (high and low resolution), I will guide you through using the **Android Studio Image Asset Studio**. This is the professional way to handle icons.
+> [!IMPORTANT]
+> **No Skip**: As requested, the skip functionality has been removed. The user must watch the full video before entering the game.
 
 ## Proposed Changes
 
-### Automated Steps (By Me)
-I will prepare the project by cleaning up the old icons and creating a reference drawable for the new artwork.
+### Layout Update
 
-#### [NEW] [app_icon_source.png](file:///C:/Users/Neha Borse/AndroidStudioProjects/nehakidsGame/app/src/main/res/drawable/app_icon_source.png)
-- Save the provided high-resolution artwork into the project's drawable folder as a source.
+#### [MODIFY] [activity_main.xml](file:///C:/Users/Neha Borse/AndroidStudioProjects/nehakidsGame/app/src/main/res/layout/activity_main.xml)
+- Overlay a `VideoView` on top of the `WebView` using a `FrameLayout`.
+- The `VideoView` will start as visible, and the `WebView` will be hidden or under it.
 
-### Manual Steps (For User)
-Since I cannot interact with the Android Studio pop-up windows directly, you will need to perform these 3 clicks:
+### Activity Implementation
 
-1.  **Right-click** on the `app` folder in the project tree.
-2.  Select **New** > **Image Asset**.
-3.  In the window that opens:
-    - **Icon Type**: Launcher Icons (Adaptive and Legacy)
-    - **Path**: Click the folder icon and select the `app_icon_source.png` I just created.
-    - **Scaling**: Adjust the slider until the artwork fits within the black circle (safe zone).
-    - Click **Next** and then **Finish**.
+#### [MODIFY] [MainActivity.java](file:///C:/Users/Neha Borse/AndroidStudioProjects/nehakidsGame/app/src/main/java/com/example/neha_kidsgame/MainActivity.java)
+- **Video Logic**:
+    - Load `res/raw/game_intro.mp4`.
+    - Use `setOnCompletionListener` to trigger the switch to the game hub.
+    - Ensure the video is forced into full-screen and maintains its aspect ratio as best as possible.
+- **Transition**:
+    - Once the video ends, the `VideoView` will be removed/hidden with a fade animation.
 
 ## Verification Plan
 
+### Automated Tests
+- Run `./gradlew assembleDebug` to verify the build.
+
 ### Manual Verification
-- After running the "Image Asset" tool, check the `res/mipmap` folders to see the generated icons.
-- Deploy the app to your phone and verify the new logo appears on the home screen.
+- **Startup**: Launch the app and verify the video plays.
+- **No Skip**: Tap the screen during playback to ensure nothing happens (video keeps playing).
+- **Auto-Switch**: Verify the game loads immediately and automatically once the video finishes.

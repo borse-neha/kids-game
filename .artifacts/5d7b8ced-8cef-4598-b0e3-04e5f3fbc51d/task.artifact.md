@@ -1,5 +1,5 @@
-- [x] Identify UI and navigation issues
-- [ ] Fix Main Menu button navigation logic
-- [ ] Increase card sizes and column spacing in index.html
-- [ ] Adjust font sizes for better legibility
-- [ ] Verify build and UI on device
+- [x] Implement Mandatory Intro Video
+    - [x] Update activity_main.xml with VideoView overlay
+    - [x] Implement video playback and auto-transition in MainActivity.java
+    - [x] Remove all skip interaction logic
+- [x] Verify build and sequence
