@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<title>FunLearning v5.4</title>
+<title>FunLearning v6.3</title>
 <style>
   :root {
     --bg-grad: linear-gradient(180deg, #e0f2fe 0%, #fdf2f8 50%, #fef3c7 100%);
-    --card-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    --border-rad: 25px;
+    --card-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+    --border-rad: 22px;
     --safe-top: env(safe-area-inset-top);
     --safe-bottom: env(safe-area-inset-bottom);
     --theme-color: #6366f1;
     --font-stack: Verdana, Geneva, sans-serif;
   }
 
-  /* ULTIMATE SYSTEM FONT FORCE */
+  /* CHILD-FRIENDLY UI RESET */
   * {
     box-sizing: border-box;
     margin: 0; padding: 0;
@@ -24,7 +24,7 @@
     font-style: normal !important;
     font-weight: 1000 !important;
     text-transform: uppercase !important;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
   }
 
   html, body { width: 100%; height: 100%; overflow: hidden; background: #fff; }
@@ -34,86 +34,118 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding-top: max(20px, var(--safe-top));
-    padding-bottom: max(20px, var(--safe-bottom));
+    padding-top: max(16px, var(--safe-top));
+    padding-bottom: max(16px, var(--safe-bottom));
   }
 
-  .screen { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 15px; }
+  .screen { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 14px; }
   .screen.active { display: flex; }
 
-  header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; height: 55px; flex-shrink: 0; }
+  header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 6px; height: 50px; flex-shrink: 0; }
   .ctrl-btn {
-    width: 52px; height: 52px; border-radius: 50%; border: none; background: #6366f1; color: white; font-size: 24px;
-    cursor: pointer; box-shadow: 0 6px 15px rgba(99, 102, 241, 0.35); display: flex; align-items: center; justify-content: center;
+    width: 48px; height: 48px; border-radius: 50%; border: none; background: #6366f1; color: white; font-size: 22px;
+    cursor: pointer; box-shadow: 0 5px 12px rgba(99, 102, 241, 0.3); display: flex; align-items: center; justify-content: center;
   }
-  .exit-btn { background: #f44336; } .settings-btn { background: #64748b; } .ctrl-btn:active { transform: scale(0.9); }
+  .exit-btn { background: #f44336; } .settings-btn { background: #64748b; } .ctrl-btn:active { transform: scale(0.92); }
 
   .score-badge {
-    background: #ffffff; padding: 10px 22px; border-radius: 25px; font-size: 18px; color: #eab308;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px;
+    background: #ffffff; padding: 8px 18px; border-radius: 22px; font-size: 16px; color: #eab308;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 6px;
   }
-  .hub-title { font-size: 32px; color: #4338ca; text-align: center; margin: 12px 0; letter-spacing: 2px; }
+  .hub-title { font-size: 28px; color: #4338ca; text-align: center; margin: 10px 0; letter-spacing: 1.5px; }
 
-  .menu-grid { width: 100%; max-width: 440px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; align-content: center; padding: 15px 0; }
+  /* MAIN MENU GRID */
+  .menu-grid { width: 100%; max-width: 420px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; align-content: center; padding: 10px 0; }
   .menu-card {
-    background: #ffffff; border-radius: 35px; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; gap: 12px; padding: 35px 10px; box-shadow: var(--card-shadow); border: 4.5px solid transparent;
+    background: #ffffff; border-radius: 28px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 10px; padding: 28px 10px; box-shadow: var(--card-shadow); border: 4px solid transparent;
     cursor: pointer; transition: transform 0.15s ease;
   }
-  .menu-card:active { transform: scale(0.94); } .menu-card .icon { font-size: 55px; line-height: 1; } .menu-card .label { font-size: 18px; color: #334155; }
+  .menu-card:active { transform: scale(0.95); } .menu-card .icon { font-size: 48px; line-height: 1; } .menu-card .label { font-size: 17px; color: #334155; }
 
-  .diff-container { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 22px; flex: 1; justify-content: center; }
-  .diff-btn { padding: 24px; border-radius: 30px; border: none; font-size: 24px; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 24px 40px; transition: transform 0.15s; }
-  .btn-easy { background: #10b981; } .btn-med { background: #f59e0b; } .btn-hard { background: #ef4444; }
+  /* COMPACT RECTANGULAR LEVEL SELECTOR BUTTONS */
+  .level-grid {
+    width: 100%; max-width: 340px; display: flex; flex-direction: column;
+    gap: 16px; flex: 1; justify-content: center; align-items: center; padding: 20px 0;
+  }
+  .level-btn {
+    width: 100%; height: 60px; padding: 0 24px; border-radius: 20px; border: none;
+    font-size: 20px; font-weight: 1000; color: white; box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;
+    transition: transform 0.15s; background: #10b981;
+  }
+  .level-btn:active { transform: scale(0.96); }
 
-  /* ENLARGED TITLE FOR KIDS */
-  .game-title { font-size: 26px; color: #0284c7; margin: 10px 0; text-align: center; letter-spacing: 3px; font-weight: 1000; }
+  .game-title { font-size: 18px; color: #0284c7; margin: 6px 0; text-align: center; letter-spacing: 2px; }
 
+  /* RESPONSIVE GAME CONTAINER & CARDS WITH BALANCED CENTRAL GAP FOR PAIRING LINES */
   .game-container {
-    position: relative; width: 100%; max-width: 650px; flex: 1; display: flex; justify-content: space-between; align-items: center; gap: 0; padding: 10px 5px;
+    position: relative; width: 100%; max-width: 600px; flex: 1; display: flex;
+    justify-content: space-between; align-items: center; gap: 0; padding: 6px 4px;
   }
   #connector-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
-  /* COLUMN AND BOX REDISTRIBUTION - SHORTER/NARROWER BOXES */
-  .column { display: flex; flex-direction: column; justify-content: space-between; height: 100%; gap: 6px; z-index: 10; }
-  .left-col { width: 22%; max-width: 100px; }
-  .right-col { width: 32%; max-width: 170px; }
+  .column { display: flex; flex-direction: column; justify-content: space-between; height: 100%; gap: 10px; z-index: 10; }
+  .left-col { width: 36%; max-width: 155px; }
+  .right-col { width: 30%; max-width: 130px; }
 
   .card {
     background: #ffffff; border-radius: var(--border-rad); display: flex; align-items: center;
-    box-shadow: var(--card-shadow); border: 4px solid transparent; cursor: pointer; position: relative;
-    transition: transform 0.15s ease; width: 100%;
+    justify-content: center; box-shadow: var(--card-shadow); border: 4px solid transparent;
+    cursor: pointer; position: relative; transition: transform 0.15s ease; width: 100%;
   }
-  .left-col .card { justify-content: center; border-color: var(--theme-color); padding: 0 5px; }
-  .right-col .card { justify-content: center; border-color: #f1f5f9; padding: 5px; }
-  .card.selected { transform: scale(1.08); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+  /* SAFE RIGHT PADDING SO TEXT NEVER TOUCHES OR OVERLAPS CONNECTOR DOT */
+  .left-col .card {
+    justify-content: center;
+    border-color: var(--theme-color);
+    padding: 6px 26px 6px 10px;
+  }
+  .right-col .card {
+    justify-content: center;
+    border-color: #f1f5f9;
+    padding: 6px 10px 6px 26px;
+  }
+  .card.selected { transform: scale(1.06); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
   .card.completed { cursor: default; opacity: 0.75; transform: none !important; }
 
-  /* ENLARGED SVG TEXT HEIGHT */
-  .svg-text { width: 95%; height: 90%; }
-  .card-icon { font-size: 50px; line-height: 1; }
+  /* TEXT AUTO-SIZING & WRAPPING FIX */
+  .name-display {
+    font-size: 18px; color: var(--theme-color); line-height: 1.1; text-align: center; width: 100%;
+    white-space: nowrap !important; overflow: hidden !important; text-overflow: clip !important;
+    word-break: keep-all !important; overflow-wrap: normal !important;
+  }
+  .card-icon { font-size: 44px; line-height: 1; }
 
-  .dot { width: 28px; height: 28px; border-radius: 50%; background: #ffffff; border: 6px solid #cbd5e1; position: absolute; top: 50%; transform: translateY(-50%); }
-  .left-col .dot { right: -14px; border-color: var(--theme-color); } .right-col .dot { left: -14px; } .completed .dot { background: var(--theme-color); }
+  /* PRECISION CENTERED ANCHOR DOTS */
+  .dot {
+    width: 24px; height: 24px; border-radius: 50%; background: #ffffff;
+    border: 5px solid #cbd5e1; position: absolute; top: 50%; transform: translateY(-50%); z-index: 15;
+  }
+  .left-col .dot { right: -12px; border-color: var(--theme-color); }
+  .right-col .dot { left: -12px; }
+  .completed .dot { background: var(--theme-color); }
 
-  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
-  .modal-content { background: white; padding: 50px 35px; border-radius: 45px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 30px 70px rgba(0,0,0,0.35); }
-  .modal h2 { font-size: 36px; color: #4338ca; margin-bottom: 30px; letter-spacing: 2px; }
-  .modal-btn { margin-top: 15px; padding: 22px; font-size: 22px; border-radius: 60px; border: none; background: #10b981; color: white; cursor: pointer; width: 100%; }
+  /* MODALS */
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.82); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-content { background: white; padding: 40px 30px; border-radius: 38px; text-align: center; width: 100%; max-width: 360px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+  .modal h2 { font-size: 30px; color: #4338ca; margin-bottom: 24px; }
+  .modal-btn { margin-top: 14px; padding: 18px; font-size: 20px; border-radius: 50px; border: none; background: #10b981; color: white; cursor: pointer; width: 100%; }
 
-  .setting-item { display: flex; justify-content: space-between; align-items: center; font-size: 24px; color: #4b5563; margin-bottom: 30px; }
-  .toggle-switch { position: relative; display: inline-block; width: 70px; height: 40px; }
+  .setting-item { display: flex; justify-content: space-between; align-items: center; font-size: 22px; color: #4b5563; margin-bottom: 24px; }
+  .toggle-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
   .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 40px; }
-  .slider:before { position: absolute; content: ""; height: 28px; width: 28px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 34px; }
+  .slider:before { position: absolute; content: ""; height: 26px; width: 24px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
   input:checked + .slider { background-color: #6366f1; }
-  input:checked + .slider:before { transform: translateX(30px); }
+  input:checked + .slider:before { transform: translateX(26px); }
 
-  .score-item { display: flex; justify-content: space-between; padding: 18px 25px; background: #f1f5f9; border-radius: 25px; font-size: 24px; margin-bottom: 15px; }
+  .score-item { display: flex; justify-content: space-between; padding: 14px 20px; background: #f1f5f9; border-radius: 20px; font-size: 20px; margin-bottom: 12px; }
 </style>
 </head>
 <body onclick="handleGlobalClick()">
 
+<!-- 1. HOME SCREEN -->
 <div class="screen active" id="screenHome">
   <header>
     <button class="ctrl-btn exit-btn" onclick="exitGame()">✕</button>
@@ -122,40 +154,66 @@
   </header>
   <h1 class="hub-title">🎮 FUN LEARNING</h1>
   <div class="menu-grid">
-    <div class="menu-card" style="border-color: #ef4444;" onclick="chooseCategory('alphabets')"><span class="icon">🅰️</span><span class="label">ALPHABETS</span></div>
+    <div class="menu-card" style="border-color: #ef4444;" onclick="chooseCategory('animals')"><span class="icon">🦁</span><span class="label">ANIMALS</span></div>
     <div class="menu-card" style="border-color: #3b82f6;" onclick="chooseCategory('shapes')"><span class="icon">🔺</span><span class="label">SHAPES</span></div>
     <div class="menu-card" style="border-color: #10b981;" onclick="chooseCategory('colors')"><span class="icon">🎨</span><span class="label">COLORS</span></div>
-    <div class="menu-card" style="border-color: #f59e0b;" onclick="chooseCategory('animals')"><span class="icon">🦁</span><span class="label">ANIMALS</span></div>
+    <div class="menu-card" style="border-color: #f59e0b;" onclick="chooseCategory('alphabets')"><span class="icon">🅰️</span><span class="label">ALPHABETS</span></div>
   </div>
   <button class="score-badge" style="margin-bottom: 15px; cursor:pointer;" onclick="openScoreboard()">🏆 HIGH SCORES</button>
 </div>
 
-<div class="screen" id="screenDiff">
-  <header><button class="ctrl-btn" onclick="showScreen('screenHome')">🏠</button><h2 id="diffHeaderTitle" style="color: #6366f1;">LEVEL</h2><div class="score-badge">⭐ <span id="diffScore">0</span></div></header>
-  <div class="diff-container">
-    <button class="diff-btn btn-easy" onclick="startGameWithDiff(3)"><span>🌱 EASY</span><span>3 PAIRS</span></button>
-    <button class="diff-btn btn-med" onclick="startGameWithDiff(4)"><span>⚡ MEDIUM</span><span>4 PAIRS</span></button>
-    <button class="diff-btn btn-hard" onclick="startGameWithDiff(5)"><span>🔥 HARD</span><span>5 PAIRS</span></button>
-  </div>
+<!-- 2. LEVEL SELECTOR SCREEN -->
+<div class="screen" id="screenLevel">
+  <header>
+    <button class="ctrl-btn" onclick="showScreen('screenHome')">🏠</button>
+    <h2 id="levelHeaderTitle" style="color: #6366f1;">SELECT LEVEL</h2>
+    <div class="score-badge">⭐ <span id="levelScore">0</span></div>
+  </header>
+  <div class="level-grid" id="levelContainer"></div>
   <div></div>
 </div>
 
+<!-- 3. GAMEPLAY SCREEN -->
 <div class="screen" id="screenGame">
-  <header><button class="ctrl-btn" onclick="showScreen('screenDiff')">⬅</button><div class="score-badge">⭐ <span id="gameScore">0</span></div><button class="ctrl-btn" onclick="renderGameRound()">↺</button></header>
+  <header>
+    <button class="ctrl-btn" onclick="showScreen('screenLevel')">⬅</button>
+    <div class="score-badge">⭐ <span id="gameScore">0</span></div>
+    <button class="ctrl-btn" onclick="startCurrentLevel()">↺</button>
+  </header>
   <h1 class="game-title" id="gameHeadline">MATCH THE PAIRS</h1>
   <div class="game-container" id="gameArea"><canvas id="connector-canvas"></canvas><div class="column left-col" id="leftColumn"></div><div class="column right-col" id="rightColumn"></div></div>
 </div>
 
+<!-- MODALS -->
 <div class="modal" id="modalSettings">
-  <div class="modal-content"><h2>SETTINGS</h2><div class="settings-list">
-    <div class="setting-item"><span>MUSIC</span><label class="toggle-switch"><input type="checkbox" id="musicToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>SOUNDS</span><label class="toggle-switch"><input type="checkbox" id="sfxToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
-  </div><button class="modal-btn" onclick="closeModal('modalSettings')">CLOSE</button><button class="modal-btn" style="background:#f44336; margin-top:10px;" onclick="exitGame()">EXIT GAME</button></div>
+  <div class="modal-content">
+    <h2>SETTINGS</h2>
+    <div class="settings-list">
+      <div class="setting-item"><span>MUSIC</span><label class="toggle-switch"><input type="checkbox" id="musicToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
+      <div class="setting-item"><span>SOUNDS</span><label class="toggle-switch"><input type="checkbox" id="sfxToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
+    </div>
+    <button class="modal-btn" onclick="closeModal('modalSettings')">CLOSE</button>
+    <button class="modal-btn" style="background:#f44336; margin-top:15px;" onclick="exitGame()">EXIT GAME</button>
+  </div>
 </div>
 
-<div class="modal" id="modalScoreboard"><div class="modal-content"><h2>HIGH SCORES 🏆</h2><div class="score-list" id="scoreboardList"></div><button class="modal-btn" onclick="closeModal('modalScoreboard')">BACK</button></div></div>
+<div class="modal" id="modalScoreboard">
+  <div class="modal-content">
+    <h2>HIGH SCORES 🏆</h2>
+    <div class="score-list" id="scoreboardList"></div>
+    <button class="modal-btn" onclick="closeModal('modalScoreboard')">BACK</button>
+  </div>
+</div>
 
-<div class="modal" id="winModal"><div class="modal-content"><h2>🌟 AWESOME! 🌟</h2><p style="font-size: 20px; color: #64748b; margin-bottom:15px;">ROUND COMPLETED! +<span id="roundEarned">0</span> POINTS</p><p style="font-size: 28px; color: #4338ca; margin-bottom:25px;">TOTAL SCORE: <span id="finalScorePop">0</span></p><button class="modal-btn" onclick="renderGameRound()">NEXT TASK ➔</button><button class="modal-btn" style="background:#6366f1; margin-top:15px;" onclick="showScreen('screenHome')">MAIN MENU 🏠</button></div></div>
+<div class="modal" id="winModal">
+  <div class="modal-content">
+    <h2 style="color:#10b981">🌟 AWESOME! 🌟</h2>
+    <p style="font-size: 18px; color: #64748b; margin-bottom:12px;">LEVEL COMPLETED!</p>
+    <p style="font-size: 24px; color: #4338ca; margin-bottom:20px;">TOTAL SCORE: <span id="finalScorePop">0</span></p>
+    <button class="modal-btn" onclick="nextLevel()">NEXT LEVEL ➔</button>
+    <button class="modal-btn" style="background:#6366f1; margin-top:15px;" onclick="showScreen('screenHome')">MAIN MENU 🏠</button>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
@@ -172,14 +230,12 @@
   }
 
   function initAudio() {
-    document.getElementById('musicToggle').checked = settings.music;
-    document.getElementById('sfxToggle').checked = settings.sfx;
     if (settings.music) startBGM();
   }
 
   function updateAudioSettings() {
-    settings.music = document.getElementById('musicToggle').checked;
-    settings.sfx = document.getElementById('sfxToggle').checked;
+    settings.music = !settings.music;
+    settings.sfx = !settings.sfx;
     localStorage.setItem('music', settings.music);
     localStorage.setItem('sfx', settings.sfx);
     if (settings.music) startBGM(); else stopBGM();
@@ -238,16 +294,80 @@
     }
   }
 
+  // COMPLETE DATASETS
   const datasets = {
-    alphabets: [{id:'A',l:'A',t:'APPLE',i:'🍎',c:'#ef4444'},{id:'B',l:'B',t:'BEE',i:'🐝',c:'#f59e0b'},{id:'C',l:'C',t:'CAT',i:'🐱',c:'#10b981'},{id:'D',l:'D',t:'DOG',i:'🐶',c:'#3b82f6'},{id:'E',l:'E',t:'ELEPHANT',i:'🐘',c:'#8b5cf6'},{id:'F',l:'F',t:'FISH',i:'🐟',c:'#ec4899'},{id:'G',l:'G',t:'GRAPES',i:'🍇',c:'#06b6d4'},{id:'H',l:'H',t:'HORSE',i:'🐴',c:'#f97316'},{id:'I',l:'I',t:'ICE CREAM',i:'🍦',c:'#84cc16'},{id:'J',l:'J',t:'JUICE',i:'🧃',c:'#0ea5e9'},{id:'K',l:'K',t:'KANGAROO',i:'🦘',c:'#d946ef'},{id:'L',l:'L',t:'LION',i:'🦁',c:'#14b8a6'},{id:'M',l:'M',t:'MONKEY',i:'🐒',c:'#e11d48'},{id:'Z',l:'Z',t:'ZEBRA',i:'🦓',c:'#059669'}],
-    shapes: [{id:'circle',l:'CIRCLE',t:'CIRCLE',i:'⚽',c:'#ef4444'},{id:'square',l:'SQUARE',t:'SQUARE',i:'📦',c:'#3b82f6'},{id:'triangle',l:'TRIANGLE',t:'TRIANGLE',i:'🍕',c:'#f59e0b'},{id:'star',l:'STAR',t:'STAR',i:'🌟',c:'#ca8a04'},{id:'heart',l:'HEART',t:'HEART',i:'💖',c:'#ec4899'},{id:'diamond',l:'DIAMOND',t:'DIAMOND',i:'🪁',c:'#06b6d4'}],
-    colors: [{id:'red',l:'RED',t:'RED',i:'🍎',c:'#ef4444'},{id:'blue',l:'BLUE',t:'BLUE',i:'🫐',c:'#3b82f6'},{id:'yellow',l:'YELLOW',t:'YELLOW',i:'🍌',c:'#eab308'},{id:'green',l:'GREEN',t:'GREEN',i:'🍃',c:'#10b981'},{id:'orange',l:'ORANGE',t:'ORANGE',i:'🍊',c:'#f97316'},{id:'purple',l:'PURPLE',t:'PURPLE',i:'🍇',c:'#8b5cf6'}],
-    animals: [{id:'cow',l:'COW',t:'COW',i:'🐄',c:'#ef4444'},{id:'bee',l:'BEE',t:'BEE',i:'🐝',c:'#f59e0b'},{id:'sheep',l:'SHEEP',t:'SHEEP',i:'🐑',c:'#06b6d4'},{id:'hen',l:'HEN',t:'HEN',i:'🐔',c:'#8b5cf6'},{id:'dog',l:'DOG',t:'DOG',i:'🐕',c:'#3b82f6'},{id:'cat',l:'CAT',t:'CAT',i:'🐈',c:'#ec4899'}]
+    animals: [
+      { id: 'cat', name: 'CAT', icon: '🐱', color: '#ef4444' },
+      { id: 'dog', name: 'DOG', icon: '🐶', color: '#3b82f6' },
+      { id: 'cow', name: 'COW', icon: '🐄', color: '#f59e0b' },
+      { id: 'lion', name: 'LION', icon: '🦁', color: '#ec4899' },
+      { id: 'hen', name: 'HEN', icon: '🐔', color: '#8b5cf6' },
+      { id: 'sheep', name: 'SHEEP', icon: '🐑', color: '#10b981' },
+      { id: 'horse', name: 'HORSE', icon: '🐴', color: '#f97316' },
+      { id: 'elephant', name: 'ELEPHANT', icon: '🐘', color: '#06b6d4' },
+      { id: 'monkey', name: 'MONKEY', icon: '🐒', color: '#ca8a04' },
+      { id: 'tiger', name: 'TIGER', icon: '🐯', color: '#ef4444' },
+      { id: 'giraffe', name: 'GIRAFFE', icon: '🦒', color: '#f59e0b' },
+      { id: 'zebra', name: 'ZEBRA', icon: '🦓', color: '#334155' },
+      { id: 'rabbit', name: 'RABBIT', icon: '🐰', color: '#ec4899' },
+      { id: 'bear', name: 'BEAR', icon: '🐻', color: '#8b5cf6' }
+    ],
+    colors: [
+      { id: 'red', name: 'RED', icon: '🔴', color: '#ef4444' },
+      { id: 'blue', name: 'BLUE', icon: '🔵', color: '#3b82f6' },
+      { id: 'green', name: 'GREEN', icon: '🟢', color: '#10b981' },
+      { id: 'yellow', name: 'YELLOW', icon: '🟡', color: '#eab308' },
+      { id: 'orange', name: 'ORANGE', icon: '🟠', color: '#f97316' },
+      { id: 'purple', name: 'PURPLE', icon: '🟣', color: '#8b5cf6' },
+      { id: 'pink', name: 'PINK', icon: '🌸', color: '#ec4899' },
+      { id: 'brown', name: 'BROWN', icon: '🤎', color: '#ca8a04' },
+      { id: 'black', name: 'BLACK', icon: '⚫', color: '#334155' }
+    ],
+    shapes: [
+      { id: 'circle', name: 'CIRCLE', icon: '⭕', color: '#ef4444' },
+      { id: 'square', name: 'SQUARE', icon: '⬜', color: '#3b82f6' },
+      { id: 'triangle', name: 'TRIANGLE', icon: '🔺', color: '#f59e0b' },
+      { id: 'rectangle', name: 'RECTANGLE', icon: '▭', color: '#10b981' },
+      { id: 'star', name: 'STAR', icon: '⭐', color: '#ca8a04' },
+      { id: 'diamond', name: 'DIAMOND', icon: '💠', color: '#ec4899' },
+      { id: 'oval', name: 'OVAL', icon: '🥚', color: '#8b5cf6' },
+      { id: 'hexagon', name: 'HEXAGON', icon: '⬢', color: '#f97316' },
+      { id: 'heart', name: 'HEART', icon: '❤️', color: '#ef4444' },
+      { id: 'pentagon', name: 'PENTAGON', icon: '⬠', color: '#06b6d4' },
+      { id: 'crescent', name: 'CRESCENT', icon: '🌙', color: '#3b82f6' }
+    ],
+    alphabets: [
+      { id: 'A', name: 'A', icon: '🍎', color: '#ef4444' },
+      { id: 'B', name: 'B', icon: '🐝', color: '#f59e0b' },
+      { id: 'C', name: 'C', icon: '🐱', color: '#10b981' },
+      { id: 'D', name: 'D', icon: '🐶', color: '#3b82f6' },
+      { id: 'E', name: 'E', icon: '🐘', color: '#8b5cf6' },
+      { id: 'F', name: 'F', icon: '🐟', color: '#ec4899' },
+      { id: 'G', name: 'G', icon: '🍇', color: '#06b6d4' },
+      { id: 'H', name: 'H', icon: '🐴', color: '#f97316' },
+      { id: 'I', name: 'I', icon: '🍦', color: '#84cc16' },
+      { id: 'J', name: 'J', icon: '🧃', color: '#0ea5e9' },
+      { id: 'K', name: 'K', icon: '🦘', color: '#d946ef' },
+      { id: 'L', name: 'L', icon: '🦁', color: '#14b8a6' },
+      { id: 'M', name: 'M', icon: '🐒', color: '#e11d48' },
+      { id: 'N', name: 'N', icon: '🪹', color: '#059669' },
+      { id: 'O', name: 'O', icon: '🦉', color: '#f59e0b' },
+      { id: 'P', name: 'P', icon: '🐧', color: '#3b82f6' },
+      { id: 'Q', name: 'Q', icon: '👑', color: '#8b5cf6' },
+      { id: 'R', name: 'R', icon: '🐰', color: '#ec4899' },
+      { id: 'S', name: 'S', icon: '☀️', color: '#eab308' },
+      { id: 'T', name: 'T', icon: '🐯', color: '#ef4444' }
+    ]
   };
 
-  let selectedCategory = 'alphabets', pairCount = 4, totalScore = 0, matches = [], selectedLeft = null, currentRoundData = [];
+  let selectedCategory = 'animals', currentLevel = 1, totalScore = 0, matches = [], selectedLeft = null, currentRoundData = [];
 
-  function updateScoreDisplays() { document.getElementById('homeScore').textContent = totalScore; document.getElementById('diffScore').textContent = totalScore; document.getElementById('gameScore').textContent = totalScore; }
+  function updateScoreDisplays() {
+    document.getElementById('homeScore').textContent = totalScore;
+    document.getElementById('levelScore').textContent = totalScore;
+    document.getElementById('gameScore').textContent = totalScore;
+  }
+
   function showScreen(screenId) {
     if (screenId === 'screenHome') saveScore();
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
@@ -256,22 +376,60 @@
     if (screenId === 'screenGame') setTimeout(resizeCanvas, 100);
     updateScoreDisplays();
   }
-  function chooseCategory(cat) { selectedCategory = cat; showScreen('screenDiff'); }
-  function startGameWithDiff(count) { pairCount = count; showScreen('screenGame'); renderGameRound(); }
+
+  function chooseCategory(cat) {
+    selectedCategory = cat;
+    const container = document.getElementById('levelContainer');
+    container.innerHTML = '';
+    const levelCounts = { animals: 4, colors: 3, shapes: 3, alphabets: 4 };
+    for (let i = 1; i <= levelCounts[cat]; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'level-btn';
+      btn.innerHTML = `⭐ LEVEL ${i}`;
+      btn.onclick = () => { currentLevel = i; startCurrentLevel(); };
+      container.appendChild(btn);
+    }
+    document.getElementById('levelHeaderTitle').textContent = cat.toUpperCase();
+    showScreen('screenLevel');
+  }
+
+  function startCurrentLevel() {
+    showScreen('screenGame');
+    renderGameRound();
+  }
+
+  function nextLevel() {
+    currentLevel++;
+    const levelCounts = { animals: 4, colors: 3, shapes: 3, alphabets: 4 };
+    if (currentLevel > levelCounts[selectedCategory]) {
+      showScreen('screenHome');
+    } else {
+      startCurrentLevel();
+    }
+  }
 
   const canvas = document.getElementById('connector-canvas'), ctx = canvas.getContext('2d');
-  function resizeCanvas() { const p = canvas.parentElement; if(!p) return; canvas.width = p.clientWidth; canvas.height = p.clientHeight; drawLines(); }
+  function resizeCanvas() {
+    const parent = canvas.parentElement;
+    if(!parent) return;
+    canvas.width = parent.clientWidth;
+    canvas.height = parent.clientHeight;
+    drawLines();
+  }
   window.addEventListener('resize', resizeCanvas);
-  function getDotCenter(card) { const dot = card.querySelector('.dot'), r = dot.getBoundingClientRect(), pr = canvas.getBoundingClientRect(); return { x: r.left + r.width / 2 - pr.left, y: r.top + r.height / 2 - pr.top }; }
+
+  function getDotCenter(card) {
+    const dot = card.querySelector('.dot'), rect = dot.getBoundingClientRect(), pRect = canvas.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2 - pRect.left, y: rect.top + rect.height / 2 - pRect.top };
+  }
 
   function drawLines() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     matches.forEach(m => {
       const p1 = getDotCenter(m.leftEl), p2 = getDotCenter(m.rightEl);
       ctx.beginPath(); ctx.moveTo(p1.x, p1.y);
-      // OPTIMIZED SWEEPING CURVE FOR WIDE GAP
-      ctx.bezierCurveTo(p1.x+100,p1.y,p2.x-100,p2.y,p2.x,p2.y);
-      ctx.strokeStyle = m.color; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.stroke();
+      ctx.bezierCurveTo(p1.x + 60, p1.y, p2.x - 60, p2.y, p2.x, p2.y);
+      ctx.strokeStyle = m.color; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
     });
   }
 
@@ -279,43 +437,75 @@
     document.getElementById('winModal').style.display = 'none';
     const leftCol = document.getElementById('leftColumn'), rightCol = document.getElementById('rightColumn');
     leftCol.innerHTML = ''; rightCol.innerHTML = ''; matches = []; selectedLeft = null;
-    const sourceData = datasets[selectedCategory] || datasets.alphabets;
-    const realCount = Math.min(pairCount, sourceData.length);
-    currentRoundData = [...sourceData].sort(() => Math.random() - 0.5).slice(0, realCount);
 
-    // INCREASED SPACE BY DIVIDING BY realCount + 1
-    const cardHeight = `calc((100% - ${(realCount - 1) * 6}px) / ${realCount + 1})`;
+    let sourceData = datasets[selectedCategory] || datasets.alphabets;
+
+    // MAX 5 PAIRS PER SCREEN TO AVOID VERTICAL CRAMPING
+    let pairCount = Math.min(3 + currentLevel, 5);
+    if (selectedCategory === 'shapes' && currentLevel === 1) pairCount = 3;
+
+    // FOR ALPHABETS, SELECT SPECIFIC RANGE BASED ON LEVEL
+    if (selectedCategory === 'alphabets') {
+      let startIndex = (currentLevel - 1) * 5;
+      sourceData = sourceData.slice(startIndex, startIndex + 5);
+      if (sourceData.length === 0) sourceData = datasets.alphabets.slice(0, 5);
+    }
+
+    currentRoundData = [...sourceData].sort(() => Math.random() - 0.5).slice(0, Math.min(pairCount, sourceData.length));
+
+    const cardHeight = `calc((100% - ${(currentRoundData.length - 1) * 10}px) / ${currentRoundData.length})`;
 
     [...currentRoundData].sort(() => Math.random() - 0.5).forEach(item => {
-      const card = document.createElement('div'); card.className = 'card'; card.style.height = cardHeight; card.style.setProperty('--theme-color', item.c);
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.height = cardHeight;
+      card.style.setProperty('--theme-color', item.color);
 
-      let fontSize = 110;
-      if (item.l.length > 3) fontSize = 80;
-      if (item.l.length > 5) fontSize = 60;
+      // DYNAMIC FONT SCALING BASED ON WORD LENGTH FOR UNCLIPPED FIT
+      let fontSize = '18px';
+      if (item.name.length > 8) {
+        fontSize = '11px';
+      } else if (item.name.length > 6) {
+        fontSize = '13px';
+      } else if (item.name.length > 4) {
+        fontSize = '15px';
+      } else if (item.name.length <= 2) {
+        fontSize = '24px';
+      }
 
-      card.innerHTML = `<svg class="svg-text" viewBox="0 0 200 120"><text x="50%" y="85" text-anchor="middle" fill="${item.c}" font-family="Verdana" font-weight="1000" font-size="${fontSize}">${item.l}</text></svg><div class="dot"></div>`;
+      card.innerHTML = `<span class="name-display" style="font-size: ${fontSize};">${item.name}</span><div class="dot"></div>`;
       card.onclick = () => {
         if (card.classList.contains('completed')) return;
         document.querySelectorAll('.left-col .card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected'); selectedLeft = { element: card, data: item };
-        playTone(440, 0.1); speak(item.l);
+        playTone(440, 0.1); speak(item.name);
       };
       leftCol.appendChild(card);
     });
 
     [...currentRoundData].sort(() => Math.random() - 0.5).forEach(item => {
-      const card = document.createElement('div'); card.className = 'card'; card.style.height = cardHeight; card.dataset.id = item.id;
-      card.innerHTML = `<div class="dot"></div><span class="card-icon">${item.i}</span>`;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.height = cardHeight;
+      card.dataset.id = item.id;
+      card.innerHTML = `<div class="dot"></div><span class="card-icon">${item.icon}</span>`;
       card.onclick = () => {
         if (!selectedLeft || card.classList.contains('completed')) return;
         if (selectedLeft.data.id === card.dataset.id) {
-          card.style.setProperty('--theme-color', selectedLeft.data.c); card.classList.add('completed'); selectedLeft.element.classList.add('completed');
-          matches.push({ leftEl: selectedLeft.element, rightEl: card, color: selectedLeft.data.c }); drawLines();
-          playTone(659, 0.2); speak(item.t); selectedLeft = null;
+          card.style.setProperty('--theme-color', selectedLeft.data.color);
+          card.classList.add('completed');
+          selectedLeft.element.classList.add('completed');
+          matches.push({ leftEl: selectedLeft.element, rightEl: card, color: selectedLeft.data.color });
+          drawLines();
+          playTone(659, 0.2); speak(item.name); selectedLeft = null;
           totalScore += 5; updateScoreDisplays();
           if (matches.length === currentRoundData.length) {
-            document.getElementById('roundEarned').textContent = currentRoundData.length * 5; document.getElementById('finalScorePop').textContent = totalScore;
-            setTimeout(() => { if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } }); document.getElementById('winModal').style.display = 'flex'; playTone(523, 0.5); }, 400);
+            document.getElementById('finalScorePop').textContent = totalScore;
+            setTimeout(() => {
+              if (typeof confetti === 'function') confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+              document.getElementById('winModal').style.display = 'flex';
+              playTone(523, 0.5);
+            }, 400);
           }
         } else { playTone(220, 0.2, 'sawtooth'); }
       };

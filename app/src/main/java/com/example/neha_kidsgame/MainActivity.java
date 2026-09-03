@@ -1,6 +1,7 @@
 package com.example.neha_kidsgame;
 
 import android.annotation.SuppressLint;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private VideoView introVideo;
+    private MediaPlayer bgMusicPlayer;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -65,6 +67,17 @@ public class MainActivity extends AppCompatActivity {
         // Load the local HTML file (but keep webview hidden for now)
         webView.loadUrl("file:///android_asset/fun.html");
 
+        // Initialize Background Music Player
+        try {
+            bgMusicPlayer = MediaPlayer.create(this, R.raw.background_music);
+            if (bgMusicPlayer != null) {
+                bgMusicPlayer.setLooping(true);
+                bgMusicPlayer.start();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Set up and start the intro video
         String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.game_intro;
         introVideo.setVideoURI(Uri.parse(videoPath));
@@ -74,9 +87,6 @@ public class MainActivity extends AppCompatActivity {
             introVideo.setVisibility(View.GONE);
             webView.setVisibility(View.VISIBLE);
         });
-
-        // Remove skip option by NOT setting an OnClickListener on the VideoView
-        // This ensures the video plays until completion.
         
         introVideo.start();
 
@@ -92,6 +102,38 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (bgMusicPlayer != null && !bgMusicPlayer.isPlaying()) {
+            bgMusicPlayer.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (bgMusicPlayer != null && bgMusicPlayer.isPlaying()) {
+            bgMusicPlayer.pause();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (bgMusicPlayer != null) {
+            try {
+                if (bgMusicPlayer.isPlaying()) {
+                    bgMusicPlayer.stop();
+                }
+                bgMusicPlayer.release();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            bgMusicPlayer = null;
+        }
     }
 
     /**
