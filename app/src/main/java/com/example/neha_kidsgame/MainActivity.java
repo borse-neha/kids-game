@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private VideoView introVideo;
     private MediaPlayer bgMusicPlayer;
+    private MediaPlayer sfxPlayer;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -67,12 +68,12 @@ public class MainActivity extends AppCompatActivity {
         // Load the local HTML file (but keep webview hidden for now)
         webView.loadUrl("file:///android_asset/fun.html");
 
-        // Initialize Background Music Player
+        // Initialize Background Music Player with soft volume attenuation
         try {
             bgMusicPlayer = MediaPlayer.create(this, R.raw.background_music);
             if (bgMusicPlayer != null) {
                 bgMusicPlayer.setLooping(true);
-                bgMusicPlayer.start();
+                bgMusicPlayer.setVolume(0.25f, 0.25f); // Soft background level
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -107,9 +108,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (bgMusicPlayer != null && !bgMusicPlayer.isPlaying()) {
-            bgMusicPlayer.start();
-        }
     }
 
     @Override
@@ -134,6 +132,17 @@ public class MainActivity extends AppCompatActivity {
             }
             bgMusicPlayer = null;
         }
+        if (sfxPlayer != null) {
+            try {
+                if (sfxPlayer.isPlaying()) {
+                    sfxPlayer.stop();
+                }
+                sfxPlayer.release();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            sfxPlayer = null;
+        }
     }
 
     /**
@@ -148,6 +157,108 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void showToast(String message) {
             Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+        }
+
+        @JavascriptInterface
+        public void playBackgroundMusic() {
+            if (bgMusicPlayer != null && !bgMusicPlayer.isPlaying()) {
+                bgMusicPlayer.start();
+            }
+        }
+
+        @JavascriptInterface
+        public void pauseBackgroundMusic() {
+            if (bgMusicPlayer != null && bgMusicPlayer.isPlaying()) {
+                bgMusicPlayer.pause();
+            }
+        }
+
+        @JavascriptInterface
+        public void duckBackgroundMusic() {
+            if (bgMusicPlayer != null) {
+                bgMusicPlayer.setVolume(0.1f, 0.1f);
+            }
+        }
+
+        @JavascriptInterface
+        public void restoreBackgroundMusic() {
+            if (bgMusicPlayer != null) {
+                bgMusicPlayer.setVolume(0.25f, 0.25f);
+            }
+        }
+
+        @JavascriptInterface
+        public void playAnimalSound(String animalName) {
+            try {
+                int soundResId = 0;
+                if (animalName != null) {
+                    switch (animalName.trim().toUpperCase()) {
+                        case "DOG":
+                            soundResId = R.raw.sound_dog;
+                            break;
+                        case "CAT":
+                            soundResId = R.raw.sound_cat;
+                            break;
+                        case "COW":
+                            soundResId = R.raw.sound_cow;
+                            break;
+                        case "LION":
+                            soundResId = R.raw.sound_lion;
+                            break;
+                        case "HEN":
+                            soundResId = R.raw.sound_hen;
+                            break;
+                        case "SHEEP":
+                            soundResId = R.raw.sound_sheep;
+                            break;
+                        case "HORSE":
+                            soundResId = R.raw.sound_horse;
+                            break;
+                        case "ELEPHANT":
+                            soundResId = R.raw.sound_elephant;
+                            break;
+                        case "MONKEY":
+                            soundResId = R.raw.sound_monkey;
+                            break;
+                        case "BEAR":
+                            soundResId = R.raw.sound_bear;
+                            break;
+                        case "TIGER":
+                            soundResId = R.raw.sound_tiger;
+                            break;
+                        case "GIRAFFE":
+                            soundResId = R.raw.sound_giraffe;
+                            break;
+                        case "ZEBRA":
+                            soundResId = R.raw.sound_zebra;
+                            break;
+                        case "RABBIT":
+                            soundResId = R.raw.sound_rabbit;
+                            break;
+                        default:
+                            soundResId = 0;
+                            break;
+                    }
+                }
+                if (soundResId != 0) {
+                    if (sfxPlayer != null) {
+                        try {
+                            if (sfxPlayer.isPlaying()) {
+                                sfxPlayer.stop();
+                            }
+                            sfxPlayer.release();
+                        } catch (Exception ignored) {}
+                        sfxPlayer = null;
+                    }
+                    sfxPlayer = MediaPlayer.create(MainActivity.this, soundResId);
+                    if (sfxPlayer != null) {
+                        sfxPlayer.setVolume(1.0f, 1.0f);
+                        sfxPlayer.start();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

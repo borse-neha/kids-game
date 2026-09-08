@@ -1,6 +1,5 @@
-- [/] Kids' Typography & Box Refinement
-    - [x] Research SVG text centering for larger fonts
-    - [ ] Update fun.html: Enlarge titles and matching letters
-    - [ ] Update fun.html: Shrink and narrow animal boxes
-    - [ ] Update fun.html: Tighten vertical layout
-- [ ] Build and Verify APK
+- [x] Create placeholder raw audio files for elephant, tiger, giraffe, zebra, rabbit in `res/raw/`
+- [x] Update `playAnimalSound()` in `MainActivity.java` with comprehensive switch-case mapping (`DOG`, `CAT`, `COW`, `LION`, `HEN`, `SHEEP`, `HORSE`, `ELEPHANT`, `MONKEY`, `BEAR`, `TIGER`, `GIRAFFE`, `ZEBRA`, `RABBIT`)
+- [x] Set `soundResId = 0` default so non-animal categories or unmapped items never default to `sound_cat`
+- [x] Verify build success with `./gradlew assembleDebug`
+- [x] Create walkthrough artifact

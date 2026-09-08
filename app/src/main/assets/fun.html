@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<title>FunLearning v6.3</title>
+<title>FunLearning v8.1</title>
 <style>
   :root {
     --bg-grad: linear-gradient(180deg, #e0f2fe 0%, #fdf2f8 50%, #fef3c7 100%);
@@ -108,6 +108,22 @@
   }
   .card.selected { transform: scale(1.06); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
   .card.completed { cursor: default; opacity: 0.75; transform: none !important; }
+  .card.hint-glow { animation: pulseGlow 0.5s ease infinite alternate; border-color: #f59e0b !important; }
+
+  @keyframes pulseGlow {
+    0% { transform: scale(1); box-shadow: 0 0 10px #f59e0b; }
+    100% { transform: scale(1.05); box-shadow: 0 0 25px #f59e0b; }
+  }
+
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+    100% { transform: translateX(0); }
+  }
+  .shake { animation: shake 0.4s ease; }
 
   /* TEXT AUTO-SIZING & WRAPPING FIX */
   .name-display {
@@ -132,7 +148,7 @@
   .modal h2 { font-size: 30px; color: #4338ca; margin-bottom: 24px; }
   .modal-btn { margin-top: 14px; padding: 18px; font-size: 20px; border-radius: 50px; border: none; background: #10b981; color: white; cursor: pointer; width: 100%; }
 
-  .setting-item { display: flex; justify-content: space-between; align-items: center; font-size: 22px; color: #4b5563; margin-bottom: 24px; }
+  .setting-item { display: flex; justify-content: space-between; align-items: center; font-size: 20px; color: #4b5563; margin-bottom: 20px; }
   .toggle-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
   .toggle-switch input { opacity: 0; width: 0; height: 0; }
   .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 34px; }
@@ -141,6 +157,14 @@
   input:checked + .slider:before { transform: translateX(26px); }
 
   .score-item { display: flex; justify-content: space-between; padding: 14px 20px; background: #f1f5f9; border-radius: 20px; font-size: 20px; margin-bottom: 12px; }
+
+  /* TROPHY ROOM & SHOP STYLING */
+  .trophy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+  .trophy-item { background: #f8fafc; border-radius: 20px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; border: 3px solid #e2e8f0; opacity: 0.5; filter: grayscale(100%); }
+  .trophy-item.unlocked { border-color: #eab308; background: #fefce8; opacity: 1; filter: none; }
+  .trophy-icon { font-size: 40px; }
+  .trophy-title { font-size: 14px; font-weight: 1000; color: #334155; text-align: center; }
+  .trophy-desc { font-size: 11px; color: #64748b; text-align: center; }
 </style>
 </head>
 <body onclick="handleGlobalClick()">
@@ -149,8 +173,14 @@
 <div class="screen active" id="screenHome">
   <header>
     <button class="ctrl-btn exit-btn" onclick="exitGame()">✕</button>
-    <div class="score-badge">⭐ SCORE: <span id="homeScore">0</span></div>
-    <button class="ctrl-btn settings-btn" onclick="openSettings()">⚙️</button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <div class="score-badge">⭐ <span id="homeScore">0</span></div>
+      <div class="score-badge">🪙 <span id="homeCoins">0</span></div>
+    </div>
+    <div style="display:flex; gap:6px; align-items:center;">
+      <button class="ctrl-btn" style="background:#f59e0b; width:42px; height:42px; display:flex; align-items:center; justify-content:center;" onclick="openShop()" title="Shop"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:white;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button>
+      <button class="ctrl-btn settings-btn" onclick="openSettings()" style="width:42px; height:42px; font-size:18px;">⚙️</button>
+    </div>
   </header>
   <h1 class="hub-title">🎮 FUN LEARNING</h1>
   <div class="menu-grid">
@@ -159,7 +189,10 @@
     <div class="menu-card" style="border-color: #10b981;" onclick="chooseCategory('colors')"><span class="icon">🎨</span><span class="label">COLORS</span></div>
     <div class="menu-card" style="border-color: #f59e0b;" onclick="chooseCategory('alphabets')"><span class="icon">🅰️</span><span class="label">ALPHABETS</span></div>
   </div>
-  <button class="score-badge" style="margin-bottom: 15px; cursor:pointer;" onclick="openScoreboard()">🏆 HIGH SCORES</button>
+  <div style="display:flex; gap:10px; width:100%; max-width:420px; justify-content:center; margin-bottom:15px;">
+    <button class="score-badge" style="cursor:pointer;" onclick="openScoreboard()">🏆 HIGH SCORES</button>
+    <button class="score-badge" style="cursor:pointer; background:#fefce8; color:#ca8a04;" onclick="openTrophyRoom()">🏆 TROPHIES</button>
+  </div>
 </div>
 
 <!-- 2. LEVEL SELECTOR SCREEN -->
@@ -178,6 +211,11 @@
   <header>
     <button class="ctrl-btn" onclick="showScreen('screenLevel')">⬅</button>
     <div class="score-badge">⭐ <span id="gameScore">0</span></div>
+    <div class="score-badge" id="timerBadge">⏱️ <span id="timerText" style="color: #0284c7;">01:00</span></div>
+    <div style="display:flex; gap:6px; align-items:center;">
+      <button class="ctrl-btn" style="background:#f59e0b; width:44px; height:44px; font-size:16px; position:relative;" onclick="useHint()" title="Hint">💡<span id="hintBadge" style="position:absolute; bottom:-4px; right:-4px; background:#fff; color:#f59e0b; font-size:10px; padding:1px 4px; border-radius:8px; border:1px solid #f59e0b;">x2</span></button>
+      <button class="ctrl-btn" style="background:#06b6d4; width:44px; height:44px; font-size:16px; position:relative;" onclick="useFreeze()" title="Freeze">❄️<span id="freezeBadge" style="position:absolute; bottom:-4px; right:-4px; background:#fff; color:#06b6d4; font-size:10px; padding:1px 4px; border-radius:8px; border:1px solid #06b6d4;">x1</span></button>
+    </div>
     <button class="ctrl-btn" onclick="startCurrentLevel()">↺</button>
   </header>
   <h1 class="game-title" id="gameHeadline">MATCH THE PAIRS</h1>
@@ -189,8 +227,9 @@
   <div class="modal-content">
     <h2>SETTINGS</h2>
     <div class="settings-list">
-      <div class="setting-item"><span>MUSIC</span><label class="toggle-switch"><input type="checkbox" id="musicToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
-      <div class="setting-item"><span>SOUNDS</span><label class="toggle-switch"><input type="checkbox" id="sfxToggle" checked onchange="updateAudioSettings()"><span class="slider"></span></label></div>
+      <div class="setting-item"><span>MUSIC</span><label class="toggle-switch"><input type="checkbox" id="musicToggle" onchange="updateAudioSettings()"><span class="slider"></span></label></div>
+      <div class="setting-item"><span>SOUNDS</span><label class="toggle-switch"><input type="checkbox" id="sfxToggle" onchange="updateAudioSettings()"><span class="slider"></span></label></div>
+      <div class="setting-item"><span>ZEN MODE</span><label class="toggle-switch"><input type="checkbox" id="zenToggle" onchange="updateDifficultySettings()"><span class="slider"></span></label></div>
     </div>
     <button class="modal-btn" onclick="closeModal('modalSettings')">CLOSE</button>
     <button class="modal-btn" style="background:#f44336; margin-top:15px;" onclick="exitGame()">EXIT GAME</button>
@@ -205,22 +244,78 @@
   </div>
 </div>
 
+<div class="modal" id="modalShop">
+  <div class="modal-content" style="max-width:380px;">
+    <h2>BOOSTER SHOP 🛒</h2>
+    <p style="font-size:18px; color:#eab308; margin-bottom:15px;">🪙 COINS: <span id="shopCoins">0</span></p>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 16px; border-radius:18px; border:2px solid #e2e8f0;">
+        <div style="text-align:left;">
+          <div style="font-size:16px; font-weight:1000; color:#334155;">💡 1x HINT</div>
+          <div style="font-size:11px; color:#64748b;">Reveals matching pair</div>
+        </div>
+        <button class="ctrl-btn" style="background:#10b981; width:auto; height:38px; padding:0 16px; font-size:14px; border-radius:15px;" onclick="buyBooster('hint')">BUY 50 🪙</button>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 16px; border-radius:18px; border:2px solid #e2e8f0;">
+        <div style="text-align:left;">
+          <div style="font-size:16px; font-weight:1000; color:#334155;">❄️ 1x FREEZE</div>
+          <div style="font-size:11px; color:#64748b;">Freezes timer 10s</div>
+        </div>
+        <button class="ctrl-btn" style="background:#10b981; width:auto; height:38px; padding:0 16px; font-size:14px; border-radius:15px;" onclick="buyBooster('freeze')">BUY 35 🪙</button>
+      </div>
+    </div>
+    <button class="modal-btn" onclick="closeModal('modalShop')">CLOSE</button>
+  </div>
+</div>
+
+<div class="modal" id="modalTrophies">
+  <div class="modal-content" style="max-width:380px;">
+    <h2>TROPHY ROOM 🏆</h2>
+    <div class="trophy-grid" id="trophyGridContainer"></div>
+    <button class="modal-btn" onclick="closeModal('modalTrophies')">BACK</button>
+  </div>
+</div>
+
 <div class="modal" id="winModal">
   <div class="modal-content">
-    <h2 style="color:#10b981">🌟 AWESOME! 🌟</h2>
-    <p style="font-size: 18px; color: #64748b; margin-bottom:12px;">LEVEL COMPLETED!</p>
+    <h2 style="color:#10b981">AWESOME!</h2>
+    <p style="font-size: 26px; margin-bottom: 6px;" id="starRatingDisplay">⭐⭐⭐</p>
+    <p style="font-size: 15px; color: #64748b; margin-bottom:12px;">TIME: <span id="timeTakenDisplay">0</span>s | EARNED <span id="coinsEarnedDisplay">0</span> 🪙</p>
     <p style="font-size: 24px; color: #4338ca; margin-bottom:20px;">TOTAL SCORE: <span id="finalScorePop">0</span></p>
     <button class="modal-btn" onclick="nextLevel()">NEXT LEVEL ➔</button>
-    <button class="modal-btn" style="background:#6366f1; margin-top:15px;" onclick="showScreen('screenHome')">MAIN MENU 🏠</button>
+    <button class="modal-btn" style="background:#6366f1; margin-top:12px;" onclick="showScreen('screenHome')">MAIN MENU 🏠</button>
+  </div>
+</div>
+
+<div class="modal" id="timesUpModal">
+  <div class="modal-content">
+    <h2 style="color:#ef4444">⏳ TIME'S UP! ⏳</h2>
+    <p style="font-size: 18px; color: #64748b; margin-bottom:20px;">YOU RAN OUT OF TIME!</p>
+    <button class="modal-btn" style="background:#10b981;" onclick="retryLevel()">RETRY LEVEL 🔄</button>
+    <button class="modal-btn" style="background:#64748b; margin-top:12px;" onclick="showScreen('screenLevel')">EXIT / LEVEL SELECT 🏠</button>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
   let audioCtx = null, musicGain = null, musicIsPlaying = false;
+  let timerInterval = null, timeLeftMillis = 60000, isFrozen = false, freezeTimeout = null, wrongAttemptsThisRound = 0, hintActive = false;
+  let consecutiveWins = parseInt(localStorage.getItem('streak') ?? '0');
+
+  let initialCoins = JSON.parse(localStorage.getItem('coins') ?? '50');
+  if (initialCoins > 150) {
+    initialCoins = 100;
+    localStorage.setItem('coins', JSON.stringify(initialCoins));
+  }
+
   const settings = {
     music: JSON.parse(localStorage.getItem('music') ?? 'true'),
     sfx: JSON.parse(localStorage.getItem('sfx') ?? 'true'),
+    zenMode: JSON.parse(localStorage.getItem('zenMode') ?? 'false'),
+    coins: initialCoins,
+    hintCount: JSON.parse(localStorage.getItem('hintCount') ?? '2'),
+    freezeCount: JSON.parse(localStorage.getItem('freezeCount') ?? '1'),
+    trophies: JSON.parse(localStorage.getItem('trophies') ?? '[]'),
     highScores: JSON.parse(localStorage.getItem('highScores') ?? '[]')
   };
 
@@ -230,62 +325,117 @@
   }
 
   function initAudio() {
-    if (settings.music) startBGM();
+    document.getElementById('musicToggle').checked = settings.music;
+    document.getElementById('sfxToggle').checked = settings.sfx;
+    document.getElementById('zenToggle').checked = settings.zenMode;
+    updateRewardDisplays();
   }
 
   function updateAudioSettings() {
-    settings.music = !settings.music;
-    settings.sfx = !settings.sfx;
-    localStorage.setItem('music', settings.music);
-    localStorage.setItem('sfx', settings.sfx);
-    if (settings.music) startBGM(); else stopBGM();
+    settings.music = document.getElementById('musicToggle').checked;
+    settings.sfx = document.getElementById('sfxToggle').checked;
+    localStorage.setItem('music', JSON.stringify(settings.music));
+    localStorage.setItem('sfx', JSON.stringify(settings.sfx));
+    if (settings.music) {
+      if (document.getElementById('screenGame').classList.contains('active')) {
+        try { if (window.Android && window.Android.playBackgroundMusic) window.Android.playBackgroundMusic(); } catch(e) {}
+      }
+    } else {
+      try { if (window.Android && window.Android.pauseBackgroundMusic) window.Android.pauseBackgroundMusic(); } catch(e) {}
+    }
   }
 
-  function startBGM() {
-    if (musicIsPlaying || !audioCtx) return;
-    musicIsPlaying = true;
-    musicGain = audioCtx.createGain();
-    musicGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-    musicGain.connect(audioCtx.destination);
-    const loop = () => {
-      if (!settings.music || !musicIsPlaying) return;
-      const now = audioCtx.currentTime;
-      [261.63, 329.63, 392.00, 523.25].forEach((f, i) => {
-        const osc = audioCtx.createOscillator();
-        osc.type = 'sine'; osc.frequency.setValueAtTime(f, now + i * 0.6);
-        osc.connect(musicGain); osc.start(now + i * 0.6); osc.stop(now + i * 0.6 + 0.5);
-      });
-      setTimeout(loop, 2400);
-    };
-    loop();
+  function updateDifficultySettings() {
+    settings.zenMode = document.getElementById('zenToggle').checked;
+    localStorage.setItem('zenMode', JSON.stringify(settings.zenMode));
   }
 
-  function stopBGM() { musicIsPlaying = false; }
-
-  function playTone(freq, duration, type='sine') {
-    if (!settings.sfx || !audioCtx) return;
-    try {
-      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-      osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + duration);
-    } catch(e) {}
+  function openSettings() {
+    document.getElementById('musicToggle').checked = settings.music;
+    document.getElementById('sfxToggle').checked = settings.sfx;
+    document.getElementById('zenToggle').checked = settings.zenMode;
+    document.getElementById('modalSettings').style.display = 'flex';
   }
 
-  function speak(text) {
-    if (!settings.sfx || !('speechSynthesis' in window)) return;
-    try { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 1.0; window.speechSynthesis.speak(u); } catch(e) {}
+  function updateRewardDisplays() {
+    document.getElementById('homeCoins').textContent = settings.coins;
+    const hintBadge = document.getElementById('hintBadge');
+    const freezeBadge = document.getElementById('freezeBadge');
+    if (hintBadge) hintBadge.textContent = 'x' + settings.hintCount;
+    if (freezeBadge) freezeBadge.textContent = 'x' + settings.freezeCount;
   }
 
-  function openSettings() { document.getElementById('modalSettings').style.display = 'flex'; }
+  function openShop() {
+    document.getElementById('shopCoins').textContent = settings.coins;
+    document.getElementById('modalShop').style.display = 'flex';
+  }
+
+  function openShopFromWin() {
+    document.getElementById('winModal').style.display = 'none';
+    openShop();
+  }
+
+  function buyBooster(type) {
+    if (type === 'hint') {
+      if (settings.coins < 50) {
+        playTone(220, 0.2, 'sawtooth');
+        try { if (window.Android && window.Android.showToast) window.Android.showToast("Not enough coins! Earn stars in levels to get coins."); } catch(e){}
+        return;
+      }
+      settings.coins -= 50;
+      settings.hintCount++;
+      localStorage.setItem('coins', JSON.stringify(settings.coins));
+      localStorage.setItem('hintCount', JSON.stringify(settings.hintCount));
+      playTone(659, 0.2);
+    } else if (type === 'freeze') {
+      if (settings.coins < 35) {
+        playTone(220, 0.2, 'sawtooth');
+        try { if (window.Android && window.Android.showToast) window.Android.showToast("Not enough coins! Earn stars in levels to get coins."); } catch(e){}
+        return;
+      }
+      settings.coins -= 35;
+      settings.freezeCount++;
+      localStorage.setItem('coins', JSON.stringify(settings.coins));
+      localStorage.setItem('freezeCount', JSON.stringify(settings.freezeCount));
+      playTone(659, 0.2);
+    }
+    document.getElementById('shopCoins').textContent = settings.coins;
+    updateRewardDisplays();
+  }
+
+  function openTrophyRoom() {
+    const container = document.getElementById('trophyGridContainer');
+    const allTrophies = [
+      { id: 'speed_demon', title: 'Speed Demon', desc: 'Finish level < 15s', icon: '⚡' },
+      { id: 'sharp_accuracy', title: 'Sharp Accuracy', desc: '0 wrong attempts', icon: '🎯' },
+      { id: 'champion_3star', title: '3-Star Champion', desc: 'All 3 stars in category', icon: '🌟' },
+      { id: 'streak_master', title: 'Streak Master', desc: '3 consecutive wins', icon: '🔥' }
+    ];
+    container.innerHTML = allTrophies.map(t => {
+      const unlocked = settings.trophies.includes(t.id);
+      return `<div class="trophy-item ${unlocked ? 'unlocked' : ''}">
+        <span class="trophy-icon">${t.icon}</span>
+        <span class="trophy-title">${t.title}</span>
+        <span class="trophy-desc">${t.desc}</span>
+        <span style="font-size:11px; color:${unlocked ? '#eab308' : '#94a3b8'}">${unlocked ? '🏆 UNLOCKED' : '🔒 LOCKED'}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('modalTrophies').style.display = 'flex';
+  }
+
+  function unlockTrophy(id) {
+    if (!settings.trophies.includes(id)) {
+      settings.trophies.push(id);
+      localStorage.setItem('trophies', JSON.stringify(settings.trophies));
+    }
+  }
+
   function openScoreboard() {
     const list = document.getElementById('scoreboardList');
     list.innerHTML = settings.highScores.length ? settings.highScores.map((s, i) => `<div class="score-item"><span>#${i+1}</span> <span>${s} PTS</span></div>`).join('') : '<p>NO SCORES YET!</p>';
     document.getElementById('modalScoreboard').style.display = 'flex';
   }
-  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; updateRewardDisplays(); }
   function saveScore() {
     if (totalScore <= 0) return;
     if (!settings.highScores.includes(totalScore)) {
@@ -294,7 +444,135 @@
     }
   }
 
-  // COMPLETE DATASETS
+  function startTimer() {
+    stopTimer();
+    isFrozen = false;
+    if (settings.zenMode) {
+      document.getElementById('timerBadge').style.display = 'none';
+      return;
+    } else {
+      document.getElementById('timerBadge').style.display = 'flex';
+    }
+    timeLeftMillis = 60000;
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      if (isFrozen) return;
+      timeLeftMillis -= 1000;
+      if (timeLeftMillis <= 0) {
+        timeLeftMillis = 0;
+        updateTimerDisplay();
+        stopTimer();
+        handleTimesUp();
+      } else {
+        updateTimerDisplay();
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    if (freezeTimeout) {
+      clearTimeout(freezeTimeout);
+      freezeTimeout = null;
+    }
+    isFrozen = false;
+  }
+
+  function updateTimerDisplay() {
+    const totalSecs = Math.floor(timeLeftMillis / 1000);
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    const timeStr = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    const timerTextEl = document.getElementById('timerText');
+    if (timerTextEl) {
+      if (isFrozen) {
+        timerTextEl.textContent = '❄️ FROZEN';
+        timerTextEl.style.color = '#06b6d4';
+      } else {
+        timerTextEl.textContent = timeStr;
+        if (totalSecs > 30) {
+          timerTextEl.style.color = '#0284c7'; // Blue
+        } else if (totalSecs > 10) {
+          timerTextEl.style.color = '#f59e0b'; // Orange
+        } else {
+          timerTextEl.style.color = '#ef4444'; // Red
+        }
+      }
+    }
+  }
+
+  function useHint() {
+    if (hintActive || matches.length === currentRoundData.length) return;
+    if (settings.hintCount <= 0) {
+      playTone(220, 0.2, 'sawtooth');
+      try { if (window.Android && window.Android.showToast) window.Android.showToast("No hints left! Visit the Shop to get more"); } catch(e){}
+      return;
+    }
+    settings.hintCount--;
+    localStorage.setItem('hintCount', JSON.stringify(settings.hintCount));
+    updateRewardDisplays();
+
+    const unmatchedLeft = Array.from(document.querySelectorAll('.left-col .card')).find(c => !c.classList.contains('completed'));
+    if (!unmatchedLeft) return;
+    const itemData = unmatchedLeft._itemData;
+    if (!itemData) return;
+
+    const targetRight = Array.from(document.querySelectorAll('.right-col .card')).find(c => c.dataset.id === itemData.id && !c.classList.contains('completed'));
+
+    hintActive = true;
+    unmatchedLeft.classList.add('hint-glow');
+    if (targetRight) targetRight.classList.add('hint-glow');
+
+    playTone(880, 0.2);
+
+    setTimeout(() => {
+      unmatchedLeft.classList.remove('hint-glow');
+      if (targetRight) targetRight.classList.remove('hint-glow');
+      hintActive = false;
+    }, 2000);
+  }
+
+  function useFreeze() {
+    if (isFrozen || settings.zenMode || timeLeftMillis <= 0) return;
+    if (settings.freezeCount <= 0) {
+      playTone(220, 0.2, 'sawtooth');
+      try { if (window.Android && window.Android.showToast) window.Android.showToast("No freezes left! Visit the Shop to get more"); } catch(e){}
+      return;
+    }
+    settings.freezeCount--;
+    localStorage.setItem('freezeCount', JSON.stringify(settings.freezeCount));
+    updateRewardDisplays();
+
+    isFrozen = true;
+    updateTimerDisplay();
+    playTone(587, 0.3);
+    freezeTimeout = setTimeout(() => {
+      isFrozen = false;
+      updateTimerDisplay();
+    }, 10000);
+  }
+
+  function handleTimesUp() {
+    consecutiveWins = 0;
+    localStorage.setItem('streak', '0');
+    document.querySelectorAll('.card').forEach(c => c.style.pointerEvents = 'none');
+    playTone(220, 0.3, 'sawtooth');
+    try { if (window.Android && window.Android.pauseBackgroundMusic) window.Android.pauseBackgroundMusic(); } catch(e) {}
+    setTimeout(() => {
+      document.getElementById('timesUpModal').style.display = 'flex';
+    }, 400);
+  }
+
+  function retryLevel() {
+    document.getElementById('timesUpModal').style.display = 'none';
+    document.querySelectorAll('.card').forEach(c => c.style.pointerEvents = 'auto');
+    startCurrentLevel();
+  }
+
+  // COMPLETE DATASETS WITH ANIMAL SOUND PROFILES
   const datasets = {
     animals: [
       { id: 'cat', name: 'CAT', icon: '🐱', color: '#ef4444' },
@@ -366,13 +644,27 @@
     document.getElementById('homeScore').textContent = totalScore;
     document.getElementById('levelScore').textContent = totalScore;
     document.getElementById('gameScore').textContent = totalScore;
+    updateRewardDisplays();
   }
 
   function showScreen(screenId) {
     if (screenId === 'screenHome') saveScore();
+    if (screenId !== 'screenGame') stopTimer();
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
+
+    // Control Native Background Music based on active screen & settings
+    try {
+      if (window.Android) {
+        if (screenId === 'screenGame' && settings.music) {
+          if (window.Android.playBackgroundMusic) window.Android.playBackgroundMusic();
+        } else {
+          if (window.Android.pauseBackgroundMusic) window.Android.pauseBackgroundMusic();
+        }
+      }
+    } catch(e) {}
+
     if (screenId === 'screenGame') setTimeout(resizeCanvas, 100);
     updateScoreDisplays();
   }
@@ -394,8 +686,10 @@
   }
 
   function startCurrentLevel() {
+    wrongAttemptsThisRound = 0;
     showScreen('screenGame');
     renderGameRound();
+    startTimer();
   }
 
   function nextLevel() {
@@ -405,6 +699,9 @@
       showScreen('screenHome');
     } else {
       startCurrentLevel();
+      if (settings.music) {
+        try { if (window.Android && window.Android.playBackgroundMusic) window.Android.playBackgroundMusic(); } catch(e) {}
+      }
     }
   }
 
@@ -435,6 +732,9 @@
 
   function renderGameRound() {
     document.getElementById('winModal').style.display = 'none';
+    document.getElementById('timesUpModal').style.display = 'none';
+    document.querySelectorAll('.card').forEach(c => c.style.pointerEvents = 'auto');
+
     const leftCol = document.getElementById('leftColumn'), rightCol = document.getElementById('rightColumn');
     leftCol.innerHTML = ''; rightCol.innerHTML = ''; matches = []; selectedLeft = null;
 
@@ -460,8 +760,8 @@
       card.className = 'card';
       card.style.height = cardHeight;
       card.style.setProperty('--theme-color', item.color);
+      card._itemData = item;
 
-      // DYNAMIC FONT SCALING BASED ON WORD LENGTH FOR UNCLIPPED FIT
       let fontSize = '18px';
       if (item.name.length > 8) {
         fontSize = '11px';
@@ -478,7 +778,7 @@
         if (card.classList.contains('completed')) return;
         document.querySelectorAll('.left-col .card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected'); selectedLeft = { element: card, data: item };
-        playTone(440, 0.1); speak(item.name);
+        playTone(440, 0.1);
       };
       leftCol.appendChild(card);
     });
@@ -497,25 +797,172 @@
           selectedLeft.element.classList.add('completed');
           matches.push({ leftEl: selectedLeft.element, rightEl: card, color: selectedLeft.data.color });
           drawLines();
-          playTone(659, 0.2); speak(item.name); selectedLeft = null;
+          try { if (window.Android && window.Android.duckBackgroundMusic) window.Android.duckBackgroundMusic(); } catch(e) {}
+
+          if (selectedCategory === 'animals') {
+            playAnimalSound(item.id);
+          } else {
+            playTone(659, 0.2);
+          }
+          selectedLeft = null;
           totalScore += 5; updateScoreDisplays();
+          setTimeout(() => {
+            try { if (window.Android && window.Android.restoreBackgroundMusic) window.Android.restoreBackgroundMusic(); } catch(e) {}
+          }, 800);
+
           if (matches.length === currentRoundData.length) {
+            stopTimer();
+            const timeTakenSeconds = settings.zenMode ? 10 : Math.floor((60000 - timeLeftMillis) / 1000);
+            let stars = '⭐⭐⭐';
+            let starCount = 3;
+            if (!settings.zenMode) {
+              if (timeTakenSeconds <= 25) {
+                stars = '⭐⭐⭐'; starCount = 3;
+              } else if (timeTakenSeconds <= 45) {
+                stars = '⭐⭐'; starCount = 2;
+              } else {
+                stars = '⭐'; starCount = 1;
+              }
+            }
+
+            const levelKey = `best_stars_${selectedCategory}_${currentLevel}`;
+            const prevBestStars = parseInt(localStorage.getItem(levelKey) ?? '0');
+
+            let coinsEarned = 2; // replay token default
+            if (starCount > prevBestStars) {
+              if (starCount === 3) coinsEarned = 15;
+              else if (starCount === 2) coinsEarned = 10;
+              else if (starCount === 1) coinsEarned = 5;
+              localStorage.setItem(levelKey, String(starCount));
+            } else {
+              coinsEarned = 2; // replay token
+            }
+            settings.coins += coinsEarned;
+
+            consecutiveWins++;
+            localStorage.setItem('streak', String(consecutiveWins));
+
+            if (timeTakenSeconds < 15 && !settings.zenMode) unlockTrophy('speed_demon');
+            if (wrongAttemptsThisRound === 0) unlockTrophy('sharp_accuracy');
+            if (consecutiveWins >= 3) unlockTrophy('streak_master');
+            if (stars === '⭐⭐⭐') {
+              unlockTrophy('champion_3star');
+            }
+
+            localStorage.setItem('coins', JSON.stringify(settings.coins));
+
+            document.getElementById('starRatingDisplay').textContent = stars;
+            document.getElementById('timeTakenDisplay').textContent = timeTakenSeconds;
+            document.getElementById('coinsEarnedDisplay').textContent = coinsEarned;
             document.getElementById('finalScorePop').textContent = totalScore;
+
+            try { if (window.Android && window.Android.pauseBackgroundMusic) window.Android.pauseBackgroundMusic(); } catch(e) {}
             setTimeout(() => {
               if (typeof confetti === 'function') confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
               document.getElementById('winModal').style.display = 'flex';
               playTone(523, 0.5);
             }, 400);
           }
-        } else { playTone(220, 0.2, 'sawtooth'); }
+        } else {
+          wrongAttemptsThisRound++;
+          consecutiveWins = 0;
+          localStorage.setItem('streak', '0');
+          playTone(220, 0.2, 'sawtooth');
+        }
       };
       rightCol.appendChild(card);
     });
     setTimeout(resizeCanvas, 100);
   }
 
+  function playAnimalSound(id) {
+    if (!settings.sfx) return;
+    try {
+      if (window.Android && window.Android.playAnimalSound) {
+        window.Android.playAnimalSound(id);
+        return;
+      }
+    } catch(e) {}
+
+    // Fallback Web Audio synth animal sound
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+    if (audioCtx) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0.3, now);
+
+        if (id === 'lion') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(120, now);
+          osc.frequency.linearRampToValueAtTime(180, now + 0.2);
+          osc.frequency.linearRampToValueAtTime(90, now + 0.5);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+          osc.start(now); osc.stop(now + 0.6);
+        } else if (id === 'cat') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.linearRampToValueAtTime(650, now + 0.15);
+          osc.frequency.linearRampToValueAtTime(350, now + 0.4);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          osc.start(now); osc.stop(now + 0.45);
+        } else if (id === 'dog') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(250, now);
+          osc.frequency.setValueAtTime(220, now + 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.start(now); osc.stop(now + 0.25);
+        } else if (id === 'cow') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.linearRampToValueAtTime(130, now + 0.5);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+          osc.start(now); osc.stop(now + 0.6);
+        } else {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.start(now); osc.stop(now + 0.3);
+        }
+      } catch(e) {}
+    }
+  }
+
+  function playTone(freq, duration, type='sine') {
+    if (!settings.sfx) return;
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+    if (audioCtx) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      try {
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+  }
+
+  function speak(text) {
+    if (!settings.sfx || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 1.0;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+
   function exitGame() { if (window.Android) window.Android.exitGame(); }
-  window.onload = () => { updateScoreDisplays(); };
+  window.onload = () => { initAudio(); updateScoreDisplays(); };
 </script>
 </body>
 </html>
