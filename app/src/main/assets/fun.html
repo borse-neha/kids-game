@@ -184,10 +184,10 @@
   </header>
   <h1 class="hub-title">🎮 FUN LEARNING</h1>
   <div class="menu-grid">
-    <div class="menu-card" style="border-color: #ef4444;" onclick="chooseCategory('animals')"><span class="icon">🦁</span><span class="label">ANIMALS</span></div>
-    <div class="menu-card" style="border-color: #3b82f6;" onclick="chooseCategory('shapes')"><span class="icon">🔺</span><span class="label">SHAPES</span></div>
-    <div class="menu-card" style="border-color: #10b981;" onclick="chooseCategory('colors')"><span class="icon">🎨</span><span class="label">COLORS</span></div>
-    <div class="menu-card" style="border-color: #f59e0b;" onclick="chooseCategory('alphabets')"><span class="icon">🅰️</span><span class="label">ALPHABETS</span></div>
+    <div class="menu-card" style="border-color: #ef4444; cursor:pointer;" onclick="chooseCategory('animals')"><span class="icon">🦁</span><span class="label">ANIMALS</span></div>
+    <div class="menu-card" style="border-color: #3b82f6; cursor:pointer;" onclick="chooseCategory('shapes')"><span class="icon">🔺</span><span class="label">SHAPES</span></div>
+    <div class="menu-card" style="border-color: #10b981; cursor:pointer;" onclick="chooseCategory('colors')"><span class="icon">🎨</span><span class="label">COLORS</span></div>
+    <div class="menu-card" style="border-color: #f59e0b; cursor:pointer;" onclick="chooseCategory('alphabets')"><span class="icon">🅰️</span><span class="label">ALPHABETS</span></div>
   </div>
   <div style="display:flex; gap:10px; width:100%; max-width:420px; justify-content:center; margin-bottom:15px;">
     <button class="score-badge" style="cursor:pointer;" onclick="openScoreboard()">🏆 HIGH SCORES</button>
@@ -670,6 +670,12 @@
   }
 
   function chooseCategory(cat) {
+    try {
+      if (window.Android && window.Android.logMessage) {
+        window.Android.logMessage("HOME CLICK: " + cat.toUpperCase());
+      }
+    } catch(e) {}
+
     selectedCategory = cat;
     const container = document.getElementById('levelContainer');
     container.innerHTML = '';
@@ -730,13 +736,128 @@
     });
   }
 
+  let selectedCard = null;
+
+  function handleCardClick(side, card, item) {
+    if (card.classList.contains('completed')) return;
+
+    if (!selectedCard) {
+      selectedCard = { side, element: card, data: item };
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      playTone(440, 0.1);
+      speak(item.name);
+      if (side === 'right' && selectedCategory === 'animals') {
+        playAnimalSound(item.id);
+      }
+    } else if (selectedCard.side === side) {
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+      selectedCard = { side, element: card, data: item };
+      card.classList.add('selected');
+      playTone(440, 0.1);
+      if (side === 'right' && selectedCategory === 'animals') {
+        playAnimalSound(item.id);
+      }
+    } else {
+      if (selectedCard.data.id === item.id) {
+        card.style.setProperty('--theme-color', selectedCard.data.color || item.color);
+        card.classList.add('completed');
+        selectedCard.element.classList.add('completed');
+
+        const leftEl = selectedCard.side === 'left' ? selectedCard.element : card;
+        const rightEl = selectedCard.side === 'right' ? selectedCard.element : card;
+        const matchColor = selectedCard.data.color || item.color;
+
+        matches.push({ leftEl, rightEl, color: matchColor });
+        drawLines();
+
+        try { if (window.Android && window.Android.duckBackgroundMusic) window.Android.duckBackgroundMusic(); } catch(e) {}
+
+        if (selectedCategory === 'animals') {
+          playAnimalSound(item.id);
+        } else {
+          playTone(659, 0.2);
+        }
+
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+        selectedCard = null;
+        totalScore += 5; updateScoreDisplays();
+
+        setTimeout(() => {
+          try { if (window.Android && window.Android.restoreBackgroundMusic) window.Android.restoreBackgroundMusic(); } catch(e) {}
+        }, 800);
+
+        if (matches.length === currentRoundData.length) {
+          stopTimer();
+          const timeTakenSeconds = settings.zenMode ? 10 : Math.floor((60000 - timeLeftMillis) / 1000);
+          let stars = '⭐⭐⭐';
+          let starCount = 3;
+          if (!settings.zenMode) {
+            if (timeTakenSeconds <= 25) {
+              stars = '⭐⭐⭐'; starCount = 3;
+            } else if (timeTakenSeconds <= 45) {
+              stars = '⭐⭐'; starCount = 2;
+            } else {
+              stars = '⭐'; starCount = 1;
+            }
+          }
+
+          const levelKey = `best_stars_${selectedCategory}_${currentLevel}`;
+          const prevBestStars = parseInt(localStorage.getItem(levelKey) ?? '0');
+
+          let coinsEarned = 2;
+          if (starCount > prevBestStars) {
+            if (starCount === 3) coinsEarned = 15;
+            else if (starCount === 2) coinsEarned = 10;
+            else if (starCount === 1) coinsEarned = 5;
+            localStorage.setItem(levelKey, String(starCount));
+          } else {
+            coinsEarned = 2;
+          }
+          settings.coins += coinsEarned;
+
+          consecutiveWins++;
+          localStorage.setItem('streak', String(consecutiveWins));
+
+          if (timeTakenSeconds < 15 && !settings.zenMode) unlockTrophy('speed_demon');
+          if (wrongAttemptsThisRound === 0) unlockTrophy('sharp_accuracy');
+          if (consecutiveWins >= 3) unlockTrophy('streak_master');
+          if (stars === '⭐⭐⭐') {
+            unlockTrophy('champion_3star');
+          }
+
+          localStorage.setItem('coins', JSON.stringify(settings.coins));
+
+          document.getElementById('starRatingDisplay').textContent = stars;
+          document.getElementById('timeTakenDisplay').textContent = timeTakenSeconds;
+          document.getElementById('coinsEarnedDisplay').textContent = coinsEarned;
+          document.getElementById('finalScorePop').textContent = totalScore;
+
+          try { if (window.Android && window.Android.pauseBackgroundMusic) window.Android.pauseBackgroundMusic(); } catch(e) {}
+          setTimeout(() => {
+            if (typeof confetti === 'function') confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+            document.getElementById('winModal').style.display = 'flex';
+            playTone(523, 0.5);
+          }, 400);
+        }
+      } else {
+        wrongAttemptsThisRound++;
+        consecutiveWins = 0;
+        localStorage.setItem('streak', '0');
+        playTone(220, 0.2, 'sawtooth');
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+        selectedCard = null;
+      }
+    }
+  }
+
   function renderGameRound() {
     document.getElementById('winModal').style.display = 'none';
     document.getElementById('timesUpModal').style.display = 'none';
     document.querySelectorAll('.card').forEach(c => c.style.pointerEvents = 'auto');
 
     const leftCol = document.getElementById('leftColumn'), rightCol = document.getElementById('rightColumn');
-    leftCol.innerHTML = ''; rightCol.innerHTML = ''; matches = []; selectedLeft = null;
+    leftCol.innerHTML = ''; rightCol.innerHTML = ''; matches = []; selectedCard = null;
 
     let sourceData = datasets[selectedCategory] || datasets.alphabets;
 
@@ -774,12 +895,7 @@
       }
 
       card.innerHTML = `<span class="name-display" style="font-size: ${fontSize};">${item.name}</span><div class="dot"></div>`;
-      card.onclick = () => {
-        if (card.classList.contains('completed')) return;
-        document.querySelectorAll('.left-col .card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected'); selectedLeft = { element: card, data: item };
-        playTone(440, 0.1);
-      };
+      card.onclick = () => handleCardClick('left', card, item);
       leftCol.appendChild(card);
     });
 
@@ -789,87 +905,7 @@
       card.style.height = cardHeight;
       card.dataset.id = item.id;
       card.innerHTML = `<div class="dot"></div><span class="card-icon">${item.icon}</span>`;
-      card.onclick = () => {
-        if (!selectedLeft || card.classList.contains('completed')) return;
-        if (selectedLeft.data.id === card.dataset.id) {
-          card.style.setProperty('--theme-color', selectedLeft.data.color);
-          card.classList.add('completed');
-          selectedLeft.element.classList.add('completed');
-          matches.push({ leftEl: selectedLeft.element, rightEl: card, color: selectedLeft.data.color });
-          drawLines();
-          try { if (window.Android && window.Android.duckBackgroundMusic) window.Android.duckBackgroundMusic(); } catch(e) {}
-
-          if (selectedCategory === 'animals') {
-            playAnimalSound(item.id);
-          } else {
-            playTone(659, 0.2);
-          }
-          selectedLeft = null;
-          totalScore += 5; updateScoreDisplays();
-          setTimeout(() => {
-            try { if (window.Android && window.Android.restoreBackgroundMusic) window.Android.restoreBackgroundMusic(); } catch(e) {}
-          }, 800);
-
-          if (matches.length === currentRoundData.length) {
-            stopTimer();
-            const timeTakenSeconds = settings.zenMode ? 10 : Math.floor((60000 - timeLeftMillis) / 1000);
-            let stars = '⭐⭐⭐';
-            let starCount = 3;
-            if (!settings.zenMode) {
-              if (timeTakenSeconds <= 25) {
-                stars = '⭐⭐⭐'; starCount = 3;
-              } else if (timeTakenSeconds <= 45) {
-                stars = '⭐⭐'; starCount = 2;
-              } else {
-                stars = '⭐'; starCount = 1;
-              }
-            }
-
-            const levelKey = `best_stars_${selectedCategory}_${currentLevel}`;
-            const prevBestStars = parseInt(localStorage.getItem(levelKey) ?? '0');
-
-            let coinsEarned = 2; // replay token default
-            if (starCount > prevBestStars) {
-              if (starCount === 3) coinsEarned = 15;
-              else if (starCount === 2) coinsEarned = 10;
-              else if (starCount === 1) coinsEarned = 5;
-              localStorage.setItem(levelKey, String(starCount));
-            } else {
-              coinsEarned = 2; // replay token
-            }
-            settings.coins += coinsEarned;
-
-            consecutiveWins++;
-            localStorage.setItem('streak', String(consecutiveWins));
-
-            if (timeTakenSeconds < 15 && !settings.zenMode) unlockTrophy('speed_demon');
-            if (wrongAttemptsThisRound === 0) unlockTrophy('sharp_accuracy');
-            if (consecutiveWins >= 3) unlockTrophy('streak_master');
-            if (stars === '⭐⭐⭐') {
-              unlockTrophy('champion_3star');
-            }
-
-            localStorage.setItem('coins', JSON.stringify(settings.coins));
-
-            document.getElementById('starRatingDisplay').textContent = stars;
-            document.getElementById('timeTakenDisplay').textContent = timeTakenSeconds;
-            document.getElementById('coinsEarnedDisplay').textContent = coinsEarned;
-            document.getElementById('finalScorePop').textContent = totalScore;
-
-            try { if (window.Android && window.Android.pauseBackgroundMusic) window.Android.pauseBackgroundMusic(); } catch(e) {}
-            setTimeout(() => {
-              if (typeof confetti === 'function') confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-              document.getElementById('winModal').style.display = 'flex';
-              playTone(523, 0.5);
-            }, 400);
-          }
-        } else {
-          wrongAttemptsThisRound++;
-          consecutiveWins = 0;
-          localStorage.setItem('streak', '0');
-          playTone(220, 0.2, 'sawtooth');
-        }
-      };
+      card.onclick = () => handleCardClick('right', card, item);
       rightCol.appendChild(card);
     });
     setTimeout(resizeCanvas, 100);
@@ -952,14 +988,30 @@
   }
 
   function speak(text) {
-    if (!settings.sfx || !('speechSynthesis' in window)) return;
+      if (!settings.sfx || !text) return;
+
+    // Android Text-to-Speech
     try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.0;
-      window.speechSynthesis.speak(u);
+        if (window.Android && window.Android.speakText) {
+            window.Android.speakText(text);
+            return;
+        }
     } catch(e) {}
-  }
+
+    // Browser fallback
+    try {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+
+            const u = new SpeechSynthesisUtterance(text);
+            u.rate = 1.0;
+            u.lang = 'en-US';
+
+            window.speechSynthesis.speak(u);
+        }
+    } catch(e) {}
+}
+
 
   function exitGame() { if (window.Android) window.Android.exitGame(); }
   window.onload = () => { initAudio(); updateScoreDisplays(); };

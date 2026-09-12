@@ -4,11 +4,13 @@ import android.annotation.SuppressLint;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import java.util.Locale;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -23,6 +25,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
+    private TextToSpeech tts;
     private VideoView introVideo;
     private MediaPlayer bgMusicPlayer;
     private MediaPlayer sfxPlayer;
@@ -31,6 +34,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+            tts = new TextToSpeech(this, status -> {
+                if (status == TextToSpeech.SUCCESS) {
+                    int result = tts.setLanguage(Locale.US);
+
+                    if (result == TextToSpeech.LANG_MISSING_DATA ||
+                            result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        tts = null;
+                    }
+                } else {
+                    tts = null;
+                }
+            });
+
+            // KEEP ALL YOUR EXISTING CODE BELOW THIS LINE
         
         // Enable EdgeToEdge and Keep Screen On
         EdgeToEdge.enable(this);
@@ -83,11 +100,12 @@ public class MainActivity extends AppCompatActivity {
         String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.game_intro;
         introVideo.setVideoURI(Uri.parse(videoPath));
         
-        introVideo.setOnCompletionListener(mp -> {
-            // Once the video finishes, hide it and show the webview
-            introVideo.setVisibility(View.GONE);
-            webView.setVisibility(View.VISIBLE);
+        introVideo.setOnCompletionListener(mp -> skipIntroVideo());
+        introVideo.setOnErrorListener((mp, what, extra) -> {
+            skipIntroVideo();
+            return true;
         });
+        introVideo.setOnClickListener(v -> skipIntroVideo());
         
         introVideo.start();
 
@@ -103,6 +121,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void skipIntroVideo() {
+        if (introVideo.getVisibility() == View.VISIBLE) {
+            try {
+                introVideo.stopPlayback();
+            } catch (Exception ignored) {}
+            introVideo.setVisibility(View.GONE);
+            webView.setVisibility(View.VISIBLE);
+            webView.bringToFront();
+        }
     }
 
     @Override
@@ -142,6 +171,12 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             sfxPlayer = null;
+
+        }// Text-to-Speech cleanup
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+            tts = null;
         }
     }
 
@@ -150,6 +185,19 @@ public class MainActivity extends AppCompatActivity {
      */
     public class WebAppInterface {
         @JavascriptInterface
+        public void speakText(String text) {
+            if (tts != null && text != null && !text.trim().isEmpty()) {
+                tts.stop();
+                tts.speak(
+                        text,
+                        TextToSpeech.QUEUE_FLUSH,
+                        null,
+                        "FUNLEARNING_TTS"
+                );
+            }
+        }
+
+        @JavascriptInterface
         public void exitGame() {
             finish();
         }
@@ -157,6 +205,11 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void showToast(String message) {
             Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+        }
+
+        @JavascriptInterface
+        public void logMessage(String message) {
+            android.util.Log.d("FUN_LEARNING_DEBUG", message);
         }
 
         @JavascriptInterface
@@ -205,35 +258,8 @@ public class MainActivity extends AppCompatActivity {
                         case "LION":
                             soundResId = R.raw.sound_lion;
                             break;
-                        case "HEN":
-                            soundResId = R.raw.sound_hen;
-                            break;
-                        case "SHEEP":
-                            soundResId = R.raw.sound_sheep;
-                            break;
                         case "HORSE":
                             soundResId = R.raw.sound_horse;
-                            break;
-                        case "ELEPHANT":
-                            soundResId = R.raw.sound_elephant;
-                            break;
-                        case "MONKEY":
-                            soundResId = R.raw.sound_monkey;
-                            break;
-                        case "BEAR":
-                            soundResId = R.raw.sound_bear;
-                            break;
-                        case "TIGER":
-                            soundResId = R.raw.sound_tiger;
-                            break;
-                        case "GIRAFFE":
-                            soundResId = R.raw.sound_giraffe;
-                            break;
-                        case "ZEBRA":
-                            soundResId = R.raw.sound_zebra;
-                            break;
-                        case "RABBIT":
-                            soundResId = R.raw.sound_rabbit;
                             break;
                         default:
                             soundResId = 0;
